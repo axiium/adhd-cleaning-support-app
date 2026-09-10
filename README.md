@@ -1,6 +1,32 @@
 # Cleaning Support App
 
-Early development documentation for an Android app designed to help people with ADHD-related task initiation and cleaning paralysis.
+Early development documentation for a cross-platform mobile app designed to help people with ADHD-related task initiation and cleaning paralysis.
+
+## Development baseline
+
+The prototype uses **Flutter and Dart** so Android and iOS can share one codebase. It starts with a dependency-light, feature-first structure and an offline-first product direction.
+
+The initial runnable experience includes the core “Do one thing” loop and a
+goal-creation flow. Users can add a goal with a cadence, room or area, and
+typical energy level. Goals, small steps, and completion state are saved on the
+device and restored when the app starts. Completed steps recur automatically
+according to their goal's daily, weekly, monthly, or yearly cadence. Each due
+step can also launch an optional focus timer with pause, finish-early, and
+stop-without-penalty actions.
+
+### Local setup
+
+Flutter is not currently installed in this development environment. After installing the Flutter SDK and Android Studio, run:
+
+```powershell
+flutter doctor
+flutter create --org com.axiium --project-name adhd_cleaning_support --platforms android,ios .
+flutter pub get
+flutter test
+flutter run
+```
+
+The application source is under `lib/`, and the architectural baseline is documented in `docs/ARCHITECTURE.md`.
 
 ## 1. Product idea
 
