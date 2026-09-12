@@ -4,6 +4,7 @@ import '../../../core/domain/cleaning_values.dart';
 import '../../../core/state/cleaning_app_scope.dart';
 import '../../timer/presentation/focus_timer_screen.dart';
 import '../domain/cleaning_task.dart';
+import '../domain/energy_task_recommender.dart';
 
 class TodayScreen extends StatefulWidget {
   const TodayScreen({super.key});
@@ -14,6 +15,7 @@ class TodayScreen extends StatefulWidget {
 
 class _TodayScreenState extends State<TodayScreen> {
   int _focusedIndex = 0;
+  EnergyLevel? _selectedEnergy;
 
   CleaningTask? _focusedTask(List<CleaningTask> pendingTasks) {
     if (pendingTasks.isEmpty) return null;
@@ -69,6 +71,44 @@ class _TodayScreenState extends State<TodayScreen> {
     setState(() => _focusedIndex = (_focusedIndex + 1) % pendingCount);
   }
 
+  Future<void> _chooseEnergy(List<CleaningTask> pendingTasks) async {
+    final selected = await showModalBottomSheet<EnergyLevel>(
+      context: context,
+      useSafeArea: true,
+      showDragHandle: true,
+      builder: (context) => _EnergyPickerSheet(selected: _selectedEnergy),
+    );
+    if (selected == null || !mounted) return;
+
+    final matches = EnergyTaskRecommender.recommendations(
+      tasks: pendingTasks,
+      availableEnergy: selected,
+    );
+    if (matches.isEmpty) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text(
+            'No ${selected.label.toLowerCase()} steps are available right now. '
+            'Choosing any small step is still okay.',
+          ),
+        ),
+      );
+      return;
+    }
+
+    setState(() {
+      _selectedEnergy = selected;
+      _focusedIndex = 0;
+    });
+  }
+
+  void _clearEnergyMatch() {
+    setState(() {
+      _selectedEnergy = null;
+      _focusedIndex = 0;
+    });
+  }
+
   Future<void> _startTimer(CleaningTask task, String goalTitle) async {
     final saved = await Navigator.of(context).push<bool>(
       MaterialPageRoute<bool>(
@@ -99,7 +139,13 @@ class _TodayScreenState extends State<TodayScreen> {
         tasks.isEmpty && controller.activeTasks.isNotEmpty;
     final pendingTasks =
         tasks.where((task) => !controller.isTaskComplete(task)).toList();
-    final focusedTask = _focusedTask(pendingTasks);
+    final recommendedTasks = _selectedEnergy == null
+        ? pendingTasks
+        : EnergyTaskRecommender.recommendations(
+            tasks: pendingTasks,
+            availableEnergy: _selectedEnergy!,
+          );
+    final focusedTask = _focusedTask(recommendedTasks);
     final completedCount = tasks.where(controller.isTaskComplete).length;
     final progress = tasks.isEmpty ? 0.0 : completedCount / tasks.length;
 
@@ -123,20 +169,32 @@ class _TodayScreenState extends State<TodayScreen> {
               progress: progress,
             ),
             const SizedBox(height: 16),
+            if (pendingTasks.isNotEmpty) ...[
+              _EnergyMatchCard(
+                selectedEnergy: _selectedEnergy,
+                onChoose: () => _chooseEnergy(pendingTasks),
+                onClear: _clearEnergyMatch,
+              ),
+              const SizedBox(height: 16),
+            ],
             if (focusedTask != null)
               _FocusCard(
                 task: focusedTask,
+                selectedEnergy: _selectedEnergy,
                 goalTitle: controller.goalById(focusedTask.goalId)?.title ??
                     'Cleaning goal',
-                canChooseAnother: pendingTasks.length > 1,
+                canChooseAnother: recommendedTasks.length > 1,
                 onComplete: () => _completeFocusedTask(focusedTask),
                 onStartTimer: () => _startTimer(
                   focusedTask,
                   controller.goalById(focusedTask.goalId)?.title ??
                       'Cleaning goal',
                 ),
-                onChooseAnother: () => _chooseAnotherTask(pendingTasks.length),
+                onChooseAnother: () =>
+                    _chooseAnotherTask(recommendedTasks.length),
               )
+            else if (_selectedEnergy != null && pendingTasks.isNotEmpty)
+              _NoEnergyMatchesCard(onClear: _clearEnergyMatch)
             else if (hasStepsScheduledLater)
               const _ScheduledLaterCard()
             else if (tasks.isEmpty)
@@ -200,9 +258,143 @@ class _ProgressCard extends StatelessWidget {
   }
 }
 
+class _EnergyMatchCard extends StatelessWidget {
+  const _EnergyMatchCard({
+    required this.selectedEnergy,
+    required this.onChoose,
+    required this.onClear,
+  });
+
+  final EnergyLevel? selectedEnergy;
+  final VoidCallback onChoose;
+  final VoidCallback onClear;
+
+  @override
+  Widget build(BuildContext context) {
+    final selected = selectedEnergy;
+    return Card(
+      color: Theme.of(context).colorScheme.tertiaryContainer,
+      child: Padding(
+        padding: const EdgeInsets.fromLTRB(16, 12, 12, 12),
+        child: Row(
+          children: [
+            const Icon(Icons.battery_charging_full_rounded),
+            const SizedBox(width: 12),
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    selected == null
+                        ? 'Match a task to your energy'
+                        : 'Matching ${selected.label.toLowerCase()} tasks',
+                    style: Theme.of(context).textTheme.titleMedium,
+                  ),
+                  const SizedBox(height: 2),
+                  Text(
+                    selected == null
+                        ? 'Tell us what you have available right now.'
+                        : 'Exact matches come first, then gentler options.',
+                  ),
+                ],
+              ),
+            ),
+            if (selected != null)
+              IconButton(
+                tooltip: 'Show any energy level',
+                onPressed: onClear,
+                icon: const Icon(Icons.close_rounded),
+              ),
+            TextButton(
+              onPressed: onChoose,
+              child: Text(selected == null ? 'Choose' : 'Change'),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+class _EnergyPickerSheet extends StatelessWidget {
+  const _EnergyPickerSheet({required this.selected});
+
+  final EnergyLevel? selected;
+
+  @override
+  Widget build(BuildContext context) {
+    return ListView(
+      shrinkWrap: true,
+      padding: const EdgeInsets.fromLTRB(20, 4, 20, 24),
+      children: [
+        Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text(
+              'What energy do you have?',
+              style: Theme.of(context).textTheme.headlineSmall,
+            ),
+            const SizedBox(height: 8),
+            const Text('This is only for right now. There is no wrong answer.'),
+            const SizedBox(height: 16),
+            _EnergyChoice(
+              energy: EnergyLevel.low,
+              description: 'Keep it tiny and easy to begin.',
+              selected: selected == EnergyLevel.low,
+            ),
+            _EnergyChoice(
+              energy: EnergyLevel.medium,
+              description: 'A little momentum, with gentler backups.',
+              selected: selected == EnergyLevel.medium,
+            ),
+            _EnergyChoice(
+              energy: EnergyLevel.high,
+              description: 'Ready for more, but smaller tasks still count.',
+              selected: selected == EnergyLevel.high,
+            ),
+          ],
+        ),
+      ],
+    );
+  }
+}
+
+class _EnergyChoice extends StatelessWidget {
+  const _EnergyChoice({
+    required this.energy,
+    required this.description,
+    required this.selected,
+  });
+
+  final EnergyLevel energy;
+  final String description;
+  final bool selected;
+
+  @override
+  Widget build(BuildContext context) {
+    return Card(
+      color: selected ? Theme.of(context).colorScheme.secondaryContainer : null,
+      child: ListTile(
+        onTap: () => Navigator.of(context).pop(energy),
+        leading: Icon(_energyIcon(energy)),
+        title: Text(energy.label),
+        subtitle: Text(description),
+        trailing: selected ? const Icon(Icons.check_rounded) : null,
+      ),
+    );
+  }
+
+  IconData _energyIcon(EnergyLevel energy) => switch (energy) {
+        EnergyLevel.low => Icons.battery_1_bar_rounded,
+        EnergyLevel.medium => Icons.battery_4_bar_rounded,
+        EnergyLevel.high => Icons.battery_full_rounded,
+      };
+}
+
 class _FocusCard extends StatelessWidget {
   const _FocusCard({
     required this.task,
+    required this.selectedEnergy,
     required this.goalTitle,
     required this.canChooseAnother,
     required this.onComplete,
@@ -211,6 +403,7 @@ class _FocusCard extends StatelessWidget {
   });
 
   final CleaningTask task;
+  final EnergyLevel? selectedEnergy;
   final String goalTitle;
   final bool canChooseAnother;
   final VoidCallback onComplete;
@@ -228,7 +421,12 @@ class _FocusCard extends StatelessWidget {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Text('Do one thing', style: theme.textTheme.labelLarge),
+            Text(
+              selectedEnergy == null
+                  ? 'Do one thing'
+                  : '${selectedEnergy!.label} match',
+              style: theme.textTheme.labelLarge,
+            ),
             const SizedBox(height: 12),
             Text(task.title, style: theme.textTheme.headlineSmall),
             const SizedBox(height: 8),
@@ -310,6 +508,33 @@ class _ScheduledLaterCard extends StatelessWidget {
             Text('Nothing is asking for attention today.'),
             SizedBox(height: 8),
             Text('Your scheduled steps will be here when their day arrives.'),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+class _NoEnergyMatchesCard extends StatelessWidget {
+  const _NoEnergyMatchesCard({required this.onClear});
+
+  final VoidCallback onClear;
+
+  @override
+  Widget build(BuildContext context) {
+    return Card(
+      color: Theme.of(context).colorScheme.primaryContainer,
+      child: Padding(
+        padding: const EdgeInsets.all(24),
+        child: Column(
+          children: [
+            const Icon(Icons.spa_outlined, size: 36),
+            const SizedBox(height: 12),
+            const Text('You finished the matching options.'),
+            const SizedBox(height: 8),
+            const Text('That can be enough, or you can look at every task.'),
+            const SizedBox(height: 12),
+            TextButton(onPressed: onClear, child: const Text('Show any task')),
           ],
         ),
       ),

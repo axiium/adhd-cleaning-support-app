@@ -119,6 +119,8 @@ void main() {
   testWidgets('focus timer can pause and finish early', (tester) async {
     await _pumpSeededApp(tester);
 
+    await tester.ensureVisible(find.text('Start 5 min timer'));
+    await tester.pump();
     await tester.tap(find.text('Start 5 min timer'));
     await tester.pumpAndSettle();
 
@@ -135,12 +137,19 @@ void main() {
     await tester.pumpAndSettle();
 
     expect(find.text('Today'), findsWidgets);
+    await tester.scrollUntilVisible(
+      find.text('1 of 3 small steps complete'),
+      -200,
+      scrollable: find.byType(Scrollable).first,
+    );
     expect(find.text('1 of 3 small steps complete'), findsOneWidget);
   });
 
   testWidgets('stopping a timer does not complete the step', (tester) async {
     await _pumpSeededApp(tester);
 
+    await tester.ensureVisible(find.text('Start 5 min timer'));
+    await tester.pump();
     await tester.tap(find.text('Start 5 min timer'));
     await tester.pumpAndSettle();
     await tester.scrollUntilVisible(
@@ -151,6 +160,11 @@ void main() {
     await tester.tap(find.text('Stop for now'));
     await tester.pumpAndSettle();
 
+    await tester.scrollUntilVisible(
+      find.text('0 of 3 small steps complete'),
+      -200,
+      scrollable: find.byType(Scrollable).first,
+    );
     expect(find.text('0 of 3 small steps complete'), findsOneWidget);
     expect(find.text('Clear one section of the counter'), findsWidgets);
   });
@@ -423,6 +437,33 @@ void main() {
     await tester.pumpAndSettle();
     expect(find.text('0 of 2 small steps complete'), findsOneWidget);
     expect(find.text('Wipe the bathroom sink'), findsNothing);
+  });
+
+  testWidgets('rescue mode matches one task to the selected energy',
+      (tester) async {
+    await _pumpSeededApp(
+      tester,
+      now: () => DateTime(2026, 9, 12, 10),
+    );
+
+    expect(find.text('Clear one section of the counter'), findsWidgets);
+    await tester.tap(find.text('Choose'));
+    await tester.pumpAndSettle();
+    expect(find.text('What energy do you have?'), findsOneWidget);
+    await tester.tap(find.text('Medium energy').last);
+    await tester.pumpAndSettle();
+
+    expect(find.text('Medium energy match'), findsOneWidget);
+    expect(find.text('Wipe the bathroom sink'), findsWidgets);
+    expect(
+      find.text('Exact matches come first, then gentler options.'),
+      findsOneWidget,
+    );
+
+    await tester.tap(find.byTooltip('Show any energy level'));
+    await tester.pumpAndSettle();
+    expect(find.text('Do one thing'), findsOneWidget);
+    expect(find.text('Clear one section of the counter'), findsWidgets);
   });
 }
 

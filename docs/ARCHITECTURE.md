@@ -104,6 +104,12 @@ local notifications behave consistently in every month. Reminder recurrence is
 aligned to the goal schedule whenever a goal is edited, and older snapshots are
 migrated using their reminder date or the migration date as a fallback.
 
+Energy rescue mode is session-only UI state on Today. It receives the same due,
+active, unfinished tasks already eligible for Today and orders exact energy
+matches before lower-energy alternatives. Tasks above the selected energy are
+excluded. The choice is intentionally not persisted because it describes the
+current moment rather than a user profile or performance metric.
+
 Completion is reversible within the current recurrence period. Undo filters out
 only timestamps from that period, retaining older history. Today provides an
 immediate snackbar action after completion, and task status icons act as explicit
@@ -140,5 +146,6 @@ The first slice proves this loop:
 11. Add persistent appearance and motion preferences. (Complete)
 12. Finish goal and step management with archive, restore, and reorder. (Complete)
 13. Add custom weekday, monthly-date, and annual-date scheduling. (Complete)
-14. Add energy-based rescue mode.
-15. Test the interaction with people who experience task paralysis.
+14. Add energy-based rescue mode. (Complete)
+15. Finish quiet hours, snooze, and reminder frequency limits.
+16. Test the interaction with people who experience task paralysis.

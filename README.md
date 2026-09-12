@@ -25,6 +25,12 @@ and remains available for the rest of its recurrence period, so missing one day
 does not create an overdue state or hide the opportunity to begin. Optional
 reminders follow the same preferred schedule.
 
+Today also includes an energy-based rescue mode. The user can choose low,
+medium, or high energy for the current moment and receive one due, unfinished
+task. Exact matches are shown first, followed by gentler options; rescue mode
+never recommends work above the selected energy and does not save or judge the
+temporary choice.
+
 ### Local setup
 
 Flutter is not currently installed in this development environment. After installing the Flutter SDK and Android Studio, run:
@@ -177,8 +183,8 @@ Define the smallest clickable prototype around one loop:
 
 > Create a goal → receive one small task → start or skip it → mark it complete → see gentle progress.
 
-The next product slice is energy-based rescue mode: choose the energy available
-right now and receive one appropriately sized task.
+The next product slice is finishing gentle reminder controls with quiet hours,
+snooze behavior, and frequency limits.
 
 ---
 
