@@ -9,6 +9,7 @@ class CleaningTask {
     required this.estimatedMinutes,
     required this.energyLevel,
     this.completions = const [],
+    this.isArchived = false,
   });
 
   final String id;
@@ -17,6 +18,7 @@ class CleaningTask {
   final int estimatedMinutes;
   final EnergyLevel energyLevel;
   final List<DateTime> completions;
+  final bool isArchived;
 
   bool isCompleteFor(GoalCadence cadence, DateTime now) {
     return completions.any(
@@ -32,6 +34,39 @@ class CleaningTask {
       estimatedMinutes: estimatedMinutes,
       energyLevel: energyLevel,
       completions: List.unmodifiable([...completions, time.toUtc()]),
+      isArchived: isArchived,
+    );
+  }
+
+  CleaningTask withoutCompletionFor(GoalCadence cadence, DateTime time) {
+    return CleaningTask(
+      id: id,
+      title: title,
+      goalId: goalId,
+      estimatedMinutes: estimatedMinutes,
+      energyLevel: energyLevel,
+      completions: List.unmodifiable(
+        completions.where(
+          (completion) => !isInSameRecurrencePeriod(
+            completion,
+            time,
+            cadence,
+          ),
+        ),
+      ),
+      isArchived: isArchived,
+    );
+  }
+
+  CleaningTask withArchived(bool isArchived) {
+    return CleaningTask(
+      id: id,
+      title: title,
+      goalId: goalId,
+      estimatedMinutes: estimatedMinutes,
+      energyLevel: energyLevel,
+      completions: completions,
+      isArchived: isArchived,
     );
   }
 }

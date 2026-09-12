@@ -86,4 +86,23 @@ void main() {
       isFalse,
     );
   });
+
+  test('undo removes only the completion in the current period', () {
+    final completedYesterday = task.completedAt(DateTime(2026, 9, 10, 12));
+    final completedAgain = completedYesterday.completedAt(
+      DateTime(2026, 9, 11, 9),
+    );
+
+    final undone = completedAgain.withoutCompletionFor(
+      GoalCadence.daily,
+      DateTime(2026, 9, 11, 10),
+    );
+
+    expect(undone.completions, hasLength(1));
+    expect(undone.completions.single.toLocal().day, 10);
+    expect(
+      undone.isCompleteFor(GoalCadence.daily, DateTime(2026, 9, 11, 10)),
+      isFalse,
+    );
+  });
 }

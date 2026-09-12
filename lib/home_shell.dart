@@ -2,6 +2,8 @@ import 'package:flutter/material.dart';
 
 import 'core/state/cleaning_app_scope.dart';
 import 'features/goals/presentation/goals_screen.dart';
+import 'features/history/presentation/history_screen.dart';
+import 'features/settings/presentation/settings_screen.dart';
 import 'features/today/presentation/today_screen.dart';
 
 class HomeShell extends StatefulWidget {
@@ -26,7 +28,12 @@ class _HomeShellState extends State<HomeShell> {
     return Scaffold(
       body: IndexedStack(
         index: _selectedIndex,
-        children: const [TodayScreen(), GoalsScreen()],
+        children: const [
+          TodayScreen(),
+          GoalsScreen(),
+          HistoryScreen(),
+          SettingsScreen(),
+        ],
       ),
       bottomNavigationBar: NavigationBar(
         selectedIndex: _selectedIndex,
@@ -43,6 +50,16 @@ class _HomeShellState extends State<HomeShell> {
             icon: Icon(Icons.flag_outlined),
             selectedIcon: Icon(Icons.flag_rounded),
             label: 'Goals',
+          ),
+          NavigationDestination(
+            icon: Icon(Icons.history_outlined),
+            selectedIcon: Icon(Icons.history_rounded),
+            label: 'History',
+          ),
+          NavigationDestination(
+            icon: Icon(Icons.settings_outlined),
+            selectedIcon: Icon(Icons.settings_rounded),
+            label: 'Settings',
           ),
         ],
       ),

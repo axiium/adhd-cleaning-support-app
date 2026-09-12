@@ -14,6 +14,17 @@ according to their goal's daily, weekly, monthly, or yearly cadence. Each due
 step can also launch an optional focus timer with pause, finish-early, and
 stop-without-penalty actions.
 
+Goals and small steps can be edited, archived, restored, reordered, or removed
+with an explicit warning. Archiving keeps completion history intact and keeps
+the item out of Today; archiving a goal also pauses its reminder until the goal
+is restored.
+
+Weekly goals can use a preferred weekday, monthly goals a reliable date from
+1–28, and yearly goals a month and day. A scheduled goal appears on that date
+and remains available for the rest of its recurrence period, so missing one day
+does not create an overdue state or hide the opportunity to begin. Optional
+reminders follow the same preferred schedule.
+
 ### Local setup
 
 Flutter is not currently installed in this development environment. After installing the Flutter SDK and Android Studio, run:
@@ -134,7 +145,8 @@ The first data model will likely need:
 - **Task:** title, goal, estimated duration, energy level, completion status
 - **Schedule:** recurrence information and next suggested date
 - **Completion:** task, timestamp, and optional duration
-- **User preferences:** reminder settings, default timer, and tone/accessibility options
+- **Reminder:** optional local schedule attached to one goal
+- **User preferences:** default timer and tone/accessibility options
 
 ## 9. Success criteria for the first prototype
 
@@ -145,6 +157,8 @@ The prototype is successful if a new user can, without instruction:
 - Understand what to do next
 - Complete or defer a task without confusion
 - Return later without feeling punished for missed work
+- Review completed steps without streak pressure or overdue messaging
+- Adjust theme, text size, and motion without changing device-wide settings
 
 The most important early measure is not total tasks completed. It is whether the app helps users begin.
 
@@ -163,10 +177,11 @@ Define the smallest clickable prototype around one loop:
 
 > Create a goal → receive one small task → start or skip it → mark it complete → see gentle progress.
 
-Once that loop feels calm and useful, add recurrence, reminders, and broader goal management.
+The next product slice is energy-based rescue mode: choose the energy available
+right now and receive one appropriately sized task.
 
 ---
 
 **Status:** Early development idea  
 **Document purpose:** Shared product baseline for exploration and prototyping  
-**Last updated:** 2026-08-14
+**Last updated:** 2026-09-11

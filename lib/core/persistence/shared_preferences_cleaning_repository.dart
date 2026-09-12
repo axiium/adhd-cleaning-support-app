@@ -3,6 +3,9 @@ import 'dart:convert';
 import 'package:shared_preferences/shared_preferences.dart';
 
 import '../../features/goals/domain/cleaning_goal.dart';
+import '../../features/goals/domain/goal_schedule.dart';
+import '../../features/reminders/domain/goal_reminder.dart';
+import '../../features/settings/domain/app_preferences.dart';
 import '../../features/today/domain/cleaning_task.dart';
 import '../domain/cleaning_values.dart';
 import 'cleaning_repository.dart';
@@ -16,7 +19,7 @@ class SharedPreferencesCleaningRepository implements CleaningRepository {
 
   // Keep the original key so schema version 1 data can be migrated in place.
   static const _storageKey = 'cleaning_snapshot_v1';
-  static const _schemaVersion = 2;
+  static const _schemaVersion = 6;
 
   final SharedPreferencesAsync _preferences;
   final DateTime Function() _now;
@@ -31,7 +34,12 @@ class SharedPreferencesCleaningRepository implements CleaningRepository {
       throw const FormatException('Cleaning snapshot must be a JSON object.');
     }
     final version = decoded['version'];
-    if (version != 1 && version != _schemaVersion) {
+    if (version != 1 &&
+        version != 2 &&
+        version != 3 &&
+        version != 4 &&
+        version != 5 &&
+        version != _schemaVersion) {
       throw const FormatException('Unsupported cleaning snapshot version.');
     }
 
@@ -51,6 +59,7 @@ class SharedPreferencesCleaningRepository implements CleaningRepository {
           version: version as int,
         );
       }).toList(),
+      preferences: _preferencesFromJson(decoded['preferences']),
     );
   }
 
@@ -60,8 +69,25 @@ class SharedPreferencesCleaningRepository implements CleaningRepository {
       'version': _schemaVersion,
       'goals': snapshot.goals.map(_goalToJson).toList(),
       'tasks': snapshot.tasks.map(_taskToJson).toList(),
+      'preferences': {
+        'theme': snapshot.preferences.theme.name,
+        'largerText': snapshot.preferences.largerText,
+        'reduceMotion': snapshot.preferences.reduceMotion,
+      },
     });
     return _preferences.setString(_storageKey, encoded);
+  }
+
+  AppPreferences _preferencesFromJson(Object? value) {
+    if (value is! Map) return const AppPreferences();
+    final json = Map<String, dynamic>.from(value);
+    return AppPreferences(
+      theme: AppThemePreference.values.byName(
+        json['theme'] as String? ?? AppThemePreference.system.name,
+      ),
+      largerText: json['largerText'] as bool? ?? false,
+      reduceMotion: json['reduceMotion'] as bool? ?? false,
+    );
   }
 
   Map<String, Object?> _goalToJson(CleaningGoal goal) {
@@ -71,16 +97,64 @@ class SharedPreferencesCleaningRepository implements CleaningRepository {
       'room': goal.room,
       'cadence': goal.cadence.name,
       'energyLevel': goal.energyLevel.name,
+      'isArchived': goal.isArchived,
+      'schedule': {
+        'weekday': goal.schedule.weekday,
+        'dayOfMonth': goal.schedule.dayOfMonth,
+        'month': goal.schedule.month,
+      },
+      'reminder': goal.reminder == null
+          ? null
+          : {
+              'hour': goal.reminder!.hour,
+              'minute': goal.reminder!.minute,
+              'weekday': goal.reminder!.weekday,
+              'dayOfMonth': goal.reminder!.dayOfMonth,
+              'month': goal.reminder!.month,
+            },
     };
   }
 
   CleaningGoal _goalFromJson(Map<String, dynamic> json) {
+    final rawReminder = json['reminder'];
+    final rawSchedule = json['schedule'];
+    final reminder = rawReminder is Map
+        ? _reminderFromJson(Map<String, dynamic>.from(rawReminder))
+        : null;
+    final fallbackDate = _now().toLocal();
     return CleaningGoal(
       id: json['id'] as String,
       title: json['title'] as String,
       room: json['room'] as String,
       cadence: GoalCadence.values.byName(json['cadence'] as String),
       energyLevel: EnergyLevel.values.byName(json['energyLevel'] as String),
+      isArchived: json['isArchived'] as bool? ?? false,
+      reminder: reminder,
+      schedule: rawSchedule is Map
+          ? _scheduleFromJson(Map<String, dynamic>.from(rawSchedule))
+          : GoalSchedule(
+              weekday: reminder?.weekday ?? fallbackDate.weekday,
+              dayOfMonth: reminder?.dayOfMonth ?? fallbackDate.day,
+              month: reminder?.month ?? fallbackDate.month,
+            ),
+    );
+  }
+
+  GoalSchedule _scheduleFromJson(Map<String, dynamic> json) {
+    return GoalSchedule(
+      weekday: json['weekday'] as int,
+      dayOfMonth: json['dayOfMonth'] as int,
+      month: json['month'] as int,
+    );
+  }
+
+  GoalReminder _reminderFromJson(Map<String, dynamic> json) {
+    return GoalReminder(
+      hour: json['hour'] as int,
+      minute: json['minute'] as int,
+      weekday: json['weekday'] as int,
+      dayOfMonth: json['dayOfMonth'] as int,
+      month: json['month'] as int,
     );
   }
 
@@ -91,6 +165,7 @@ class SharedPreferencesCleaningRepository implements CleaningRepository {
       'goalId': task.goalId,
       'estimatedMinutes': task.estimatedMinutes,
       'energyLevel': task.energyLevel.name,
+      'isArchived': task.isArchived,
       'completions': task.completions
           .map((completion) => completion.toUtc().toIso8601String())
           .toList(),
@@ -116,6 +191,7 @@ class SharedPreferencesCleaningRepository implements CleaningRepository {
       estimatedMinutes: json['estimatedMinutes'] as int,
       energyLevel: EnergyLevel.values.byName(json['energyLevel'] as String),
       completions: completions,
+      isArchived: json['isArchived'] as bool? ?? false,
     );
   }
 }

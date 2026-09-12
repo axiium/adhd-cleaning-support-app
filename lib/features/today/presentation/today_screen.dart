@@ -21,14 +21,47 @@ class _TodayScreenState extends State<TodayScreen> {
   }
 
   Future<void> _completeFocusedTask(CleaningTask task) async {
-    final saved = await CleaningAppScope.of(context).completeTask(task.id);
-    if (!saved && mounted) {
+    final controller = CleaningAppScope.of(context);
+    final saved = await controller.completeTask(task.id);
+    if (!mounted) return;
+
+    if (!saved) {
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(
           content: Text('Completed for now, but it could not be saved.'),
         ),
       );
+      return;
     }
+
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: const Text('Small step completed.'),
+        action: SnackBarAction(
+          label: 'Undo',
+          onPressed: () => controller.undoTaskCompletion(task.id),
+        ),
+      ),
+    );
+  }
+
+  Future<void> _toggleTaskCompletion(CleaningTask task) async {
+    final controller = CleaningAppScope.of(context);
+    final wasComplete = controller.isTaskComplete(task);
+    final saved = await controller.toggleTaskCompletion(task.id);
+    if (!mounted) return;
+
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: Text(
+          !saved
+              ? 'That change could not be saved. Please try again.'
+              : wasComplete
+                  ? 'Marked as not done.'
+                  : 'Small step completed.',
+        ),
+      ),
+    );
   }
 
   void _chooseAnotherTask(int pendingCount) {
@@ -62,6 +95,8 @@ class _TodayScreenState extends State<TodayScreen> {
     final theme = Theme.of(context);
     final controller = CleaningAppScope.of(context);
     final tasks = controller.tasks;
+    final hasStepsScheduledLater =
+        tasks.isEmpty && controller.activeTasks.isNotEmpty;
     final pendingTasks =
         tasks.where((task) => !controller.isTaskComplete(task)).toList();
     final focusedTask = _focusedTask(pendingTasks);
@@ -102,6 +137,8 @@ class _TodayScreenState extends State<TodayScreen> {
                 ),
                 onChooseAnother: () => _chooseAnotherTask(pendingTasks.length),
               )
+            else if (hasStepsScheduledLater)
+              const _ScheduledLaterCard()
             else if (tasks.isEmpty)
               const _NoStepsCard()
             else
@@ -109,7 +146,11 @@ class _TodayScreenState extends State<TodayScreen> {
             const SizedBox(height: 28),
             Text('Your small steps', style: theme.textTheme.titleLarge),
             const SizedBox(height: 12),
-            if (tasks.isEmpty)
+            if (hasStepsScheduledLater)
+              const Text(
+                'Your other steps will appear here on their preferred days.',
+              )
+            else if (tasks.isEmpty)
               const Text('Add a small step to one of your goals to begin.')
             else
               for (final task in tasks)
@@ -120,6 +161,7 @@ class _TodayScreenState extends State<TodayScreen> {
                       'Cleaning goal',
                   cadence: controller.goalById(task.goalId)?.cadence ??
                       GoalCadence.weekly,
+                  onToggle: () => _toggleTaskCompletion(task),
                 ),
           ],
         ),
@@ -252,6 +294,29 @@ class _NoStepsCard extends StatelessWidget {
   }
 }
 
+class _ScheduledLaterCard extends StatelessWidget {
+  const _ScheduledLaterCard();
+
+  @override
+  Widget build(BuildContext context) {
+    return Card(
+      color: Theme.of(context).colorScheme.primaryContainer,
+      child: const Padding(
+        padding: EdgeInsets.all(24),
+        child: Column(
+          children: [
+            Icon(Icons.event_available_outlined, size: 36),
+            SizedBox(height: 12),
+            Text('Nothing is asking for attention today.'),
+            SizedBox(height: 8),
+            Text('Your scheduled steps will be here when their day arrives.'),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
 class _AllDoneCard extends StatelessWidget {
   const _AllDoneCard();
 
@@ -279,24 +344,30 @@ class _TaskRow extends StatelessWidget {
     required this.isComplete,
     required this.goalTitle,
     required this.cadence,
+    required this.onToggle,
   });
 
   final CleaningTask task;
   final bool isComplete;
   final String goalTitle;
   final GoalCadence cadence;
+  final VoidCallback onToggle;
 
   @override
   Widget build(BuildContext context) {
     return ListTile(
       contentPadding: EdgeInsets.zero,
-      leading: Icon(
-        isComplete
-            ? Icons.check_circle_rounded
-            : Icons.radio_button_unchecked_rounded,
-        color: isComplete
-            ? Theme.of(context).colorScheme.primary
-            : Theme.of(context).colorScheme.outline,
+      leading: IconButton(
+        onPressed: onToggle,
+        tooltip: isComplete ? 'Mark as not done' : 'Mark complete',
+        icon: Icon(
+          isComplete
+              ? Icons.check_circle_rounded
+              : Icons.radio_button_unchecked_rounded,
+          color: isComplete
+              ? Theme.of(context).colorScheme.primary
+              : Theme.of(context).colorScheme.outline,
+        ),
       ),
       title: Text(
         task.title,

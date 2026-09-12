@@ -22,6 +22,16 @@ lib/
     goals/
       domain/
       presentation/
+    history/
+      domain/
+      presentation/
+    reminders/
+      application/
+      domain/
+      infrastructure/
+    settings/
+      domain/
+      presentation/
     timer/
       presentation/
     today/
@@ -31,7 +41,7 @@ test/
 ```
 
 New areas should be introduced as product features rather than generic technical
-layers. Likely next features are `timer`, `history`, and `settings`.
+layers. Likely next features are `settings`, `editing`, and `onboarding`.
 
 ## State and storage
 
@@ -50,10 +60,59 @@ current completion state is derived from the parent goal's cadence and the
 local calendar period. Weekly periods begin Monday; monthly and yearly periods
 begin on the first day of their respective periods.
 
+The app refreshes recurrence state at local midnight and whenever it resumes
+from the background. This keeps Today accurate across a calendar boundary
+without rewriting or deleting completion history.
+
 The focus timer is deliberately session-only: stopping it does not change the
 task, while finishing early or confirming completion at zero records the task
 through the shared controller. Its countdown is based on an end timestamp so it
 can correct itself after application lifecycle pauses.
+
+Each goal may have one opt-in local reminder. The app asks for notification
+permission only after the user chooses a time, uses quiet notification settings,
+and schedules with the device time zone. Reminder delivery is intentionally
+inexact on Android so the app does not require exact-alarm access. Scheduling is
+behind a `ReminderScheduler` boundary so permission denial and scheduling can be
+tested without platform services. An explicit test action sends an immediate
+notification so users can verify permission and presentation without waiting for
+the next recurring time.
+
+History is derived directly from task completion timestamps rather than stored
+as a second copy of the data. Entries are sorted newest first and grouped by
+local calendar day. The screen offers today and current-week totals while
+deliberately avoiding streaks, overdue counts, or missed-day messaging.
+
+Goal and step edits retain stable IDs and existing completion timestamps. Goal
+removal cascades to its steps and cancels any scheduled reminder. Because removal
+also erases associated history, both goal and step removal require an explicit
+confirmation that describes the consequence.
+
+Goals and tasks also carry an archive flag. Active-list order is represented by
+the order of items in the persisted snapshot, avoiding a second ordering field.
+Archived items remain in that snapshot so History can still resolve their names
+and completion timestamps. Active views filter archived tasks and tasks whose
+parent goal is archived. Goal archiving cancels its notification schedule;
+restoring the goal schedules its retained reminder again.
+
+Each goal owns a `GoalSchedule` in addition to its cadence. Daily goals are
+always eligible; weekly, monthly, and yearly goals become eligible on their
+preferred date and remain eligible through the current recurrence period. This
+avoids a fragile one-day window and deliberately does not create overdue state.
+Monthly choices are limited to days 1–28 so both availability and recurring
+local notifications behave consistently in every month. Reminder recurrence is
+aligned to the goal schedule whenever a goal is edited, and older snapshots are
+migrated using their reminder date or the migration date as a fallback.
+
+Completion is reversible within the current recurrence period. Undo filters out
+only timestamps from that period, retaining older history. Today provides an
+immediate snackbar action after completion, and task status icons act as explicit
+complete/not-done toggles on both Today and goal detail screens.
+
+App preferences are stored in the same versioned snapshot as goals and tasks.
+Theme mode, an additional text-scale multiplier, and reduced-motion behavior are
+applied at the app root so dialogs and feature screens inherit the same choices.
+System text scaling remains the baseline rather than being replaced.
 
 ## First vertical slice
 
@@ -74,5 +133,12 @@ The first slice proves this loop:
 4. Persist goals and task completions locally. (Complete)
 5. Make completion recur by daily, weekly, monthly, or yearly period. (Complete)
 6. Add optional timers. (Complete)
-7. Add carefully controlled reminders.
-8. Test the interaction with people who experience task paralysis.
+7. Add carefully controlled reminders. (Complete)
+8. Add a gentle completion history. (Complete)
+9. Add editing and confirmed removal for goals and steps. (Complete)
+10. Make accidental completion reversible. (Complete)
+11. Add persistent appearance and motion preferences. (Complete)
+12. Finish goal and step management with archive, restore, and reorder. (Complete)
+13. Add custom weekday, monthly-date, and annual-date scheduling. (Complete)
+14. Add energy-based rescue mode.
+15. Test the interaction with people who experience task paralysis.

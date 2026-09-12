@@ -1,4 +1,5 @@
 import '../../features/goals/domain/cleaning_goal.dart';
+import '../../features/settings/domain/app_preferences.dart';
 import '../../features/today/domain/cleaning_task.dart';
 import '../domain/cleaning_values.dart';
 
@@ -6,6 +7,7 @@ class CleaningSnapshot {
   CleaningSnapshot({
     required List<CleaningGoal> goals,
     required List<CleaningTask> tasks,
+    this.preferences = const AppPreferences(),
   })  : goals = List.unmodifiable(goals),
         tasks = List.unmodifiable(tasks);
 
@@ -55,6 +57,7 @@ class CleaningSnapshot {
 
   final List<CleaningGoal> goals;
   final List<CleaningTask> tasks;
+  final AppPreferences preferences;
 }
 
 abstract interface class CleaningRepository {
@@ -77,11 +80,19 @@ class MemoryCleaningRepository implements CleaningRepository {
   Future<CleaningSnapshot?> load() async {
     final snapshot = _snapshot;
     if (snapshot == null) return null;
-    return CleaningSnapshot(goals: snapshot.goals, tasks: snapshot.tasks);
+    return CleaningSnapshot(
+      goals: snapshot.goals,
+      tasks: snapshot.tasks,
+      preferences: snapshot.preferences,
+    );
   }
 
   @override
   Future<void> save(CleaningSnapshot snapshot) async {
-    _snapshot = CleaningSnapshot(goals: snapshot.goals, tasks: snapshot.tasks);
+    _snapshot = CleaningSnapshot(
+      goals: snapshot.goals,
+      tasks: snapshot.tasks,
+      preferences: snapshot.preferences,
+    );
   }
 }
