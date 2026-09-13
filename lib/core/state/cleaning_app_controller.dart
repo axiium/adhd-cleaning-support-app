@@ -81,6 +81,12 @@ class CleaningAppController extends ChangeNotifier {
       );
 
   Future<bool> restoreBackup(String value) async {
+    final previousSnapshot = CleaningSnapshot(
+      goals: _goals,
+      tasks: _tasks,
+      preferences: _preferences,
+    );
+    final previousFirstRun = _isFirstRun;
     try {
       final snapshot = CleaningBackupCodec.decode(value);
       _replaceWith(snapshot);
@@ -98,6 +104,9 @@ class CleaningAppController extends ChangeNotifier {
     } on Object {
       // Keep the current data when the backup is invalid or cannot be saved.
     }
+    _replaceWith(previousSnapshot);
+    _isFirstRun = previousFirstRun;
+    notifyListeners();
     return false;
   }
 
