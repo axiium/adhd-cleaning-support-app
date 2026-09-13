@@ -1,5 +1,6 @@
 import '../../goals/domain/cleaning_goal.dart';
 import '../../today/domain/cleaning_task.dart';
+import '../../../core/domain/cleaning_values.dart';
 
 class CompletionHistoryEntry {
   const CompletionHistoryEntry({
@@ -7,6 +8,9 @@ class CompletionHistoryEntry {
     required this.taskTitle,
     required this.goalTitle,
     required this.room,
+    required this.cadence,
+    required this.energyLevel,
+    required this.estimatedMinutes,
     required this.completedAt,
   });
 
@@ -14,6 +18,9 @@ class CompletionHistoryEntry {
   final String taskTitle;
   final String goalTitle;
   final String room;
+  final GoalCadence cadence;
+  final EnergyLevel energyLevel;
+  final int estimatedMinutes;
   final DateTime completedAt;
 }
 
@@ -49,6 +56,9 @@ class CompletionHistory {
             taskTitle: task.title,
             goalTitle: goal?.title ?? 'Cleaning goal',
             room: goal?.room ?? '',
+            cadence: goal?.cadence ?? GoalCadence.daily,
+            energyLevel: task.energyLevel,
+            estimatedMinutes: task.estimatedMinutes,
             completedAt: completion.toLocal(),
           ),
         );

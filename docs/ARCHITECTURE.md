@@ -165,5 +165,5 @@ The first slice proves this loop:
 13. Add custom weekday, monthly-date, and annual-date scheduling. (Complete)
 14. Add energy-based rescue mode. (Complete)
 15. Finish quiet hours, snooze, and reminder frequency limits. (Complete)
-16. Expand completion-history filtering and detail.
+16. Expand completion-history filtering and detail. (Complete)
 17. Test the interaction with people who experience task paralysis.

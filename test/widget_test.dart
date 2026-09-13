@@ -270,9 +270,19 @@ void main() {
     await tester.pumpAndSettle();
 
     expect(find.text('Recent activity'), findsOneWidget);
+    await tester.scrollUntilVisible(
+      find.text('Clear one section of the counter'),
+      300,
+      scrollable: find.byType(Scrollable).first,
+    );
     expect(find.text('Clear one section of the counter'), findsOneWidget);
     expect(find.text('Keep the kitchen usable · Kitchen'), findsOneWidget);
     expect(find.text('10:15 AM'), findsOneWidget);
+    await tester.tap(find.text('Clear one section of the counter'));
+    await tester.pumpAndSettle();
+    expect(find.text('Goal'), findsOneWidget);
+    expect(find.text('Estimated time'), findsOneWidget);
+    expect(find.text('Low energy'), findsOneWidget);
   });
 
   testWidgets('a user can edit a goal and a small step', (tester) async {
