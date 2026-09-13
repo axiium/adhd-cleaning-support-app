@@ -1,3 +1,7 @@
+import 'dart:convert';
+import 'dart:typed_data';
+
+import 'package:file_picker/file_picker.dart';
 import 'package:flutter/material.dart';
 
 import '../../../core/state/cleaning_app_scope.dart';
@@ -20,6 +24,96 @@ class SettingsScreen extends StatelessWidget {
               Text('That preference could not be saved. Please try again.'),
         ),
       );
+    }
+  }
+
+  Future<void> _exportBackup(BuildContext context) async {
+    try {
+      final path = await FilePicker.platform.saveFile(
+        dialogTitle: 'Save your Cleaning Support backup',
+        fileName: 'cleaning-support-backup.json',
+        type: FileType.custom,
+        allowedExtensions: ['json'],
+        bytes: Uint8List.fromList(
+          utf8.encode(CleaningAppScope.of(context).exportBackup()),
+        ),
+      );
+      if (path != null && context.mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+              content: Text('Backup saved. Keep the file somewhere safe.')),
+        );
+      }
+    } on Object {
+      if (context.mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+              content: Text(
+                  'File export is unavailable. Fully restart the app and try again.')),
+        );
+      }
+    }
+  }
+
+  Future<void> _restoreBackup(BuildContext context) async {
+    try {
+      final result = await FilePicker.platform.pickFiles(
+        dialogTitle: 'Choose a Cleaning Support backup',
+        type: FileType.custom,
+        allowedExtensions: ['json'],
+        withData: true,
+      );
+      final bytes = result?.files.single.bytes;
+      if (bytes == null) {
+        if (context.mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(
+                content: Text('That backup file could not be read.')),
+          );
+        }
+        return;
+      }
+      final value = utf8.decode(bytes);
+      if (!context.mounted) return;
+      final confirmed = await showDialog<bool>(
+            context: context,
+            builder: (context) => AlertDialog(
+              title: const Text('Restore this backup?'),
+              content: const Text(
+                'This replaces the goals, history, and settings currently on this device.',
+              ),
+              actions: [
+                TextButton(
+                  onPressed: () => Navigator.pop(context, false),
+                  child: const Text('Keep current data'),
+                ),
+                FilledButton(
+                  onPressed: () => Navigator.pop(context, true),
+                  child: const Text('Restore backup'),
+                ),
+              ],
+            ),
+          ) ??
+          false;
+      if (!confirmed || !context.mounted) return;
+      final restored = await CleaningAppScope.of(context).restoreBackup(value);
+      if (context.mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text(restored
+                ? 'Backup restored.'
+                : 'That backup could not be restored. Your current data is safe.'),
+          ),
+        );
+      }
+    } on Object {
+      if (context.mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+              content: Text(
+                  'File restore is unavailable. Fully restart the app and try again.')),
+        );
+      }
     }
   }
 
@@ -70,6 +164,41 @@ class SettingsScreen extends StatelessWidget {
             Text(
               'These choices stay on this device and can be changed anytime.',
               style: theme.textTheme.bodyLarge,
+            ),
+            const SizedBox(height: 28),
+            Text('Backup', style: theme.textTheme.titleLarge),
+            const SizedBox(height: 12),
+            Card(
+              color: theme.colorScheme.surfaceContainerHighest,
+              child: Padding(
+                padding: const EdgeInsets.all(16),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    const Text('Keep a copy of your local goals and history.'),
+                    const SizedBox(height: 12),
+                    Row(
+                      children: [
+                        Expanded(
+                          child: OutlinedButton.icon(
+                            onPressed: () => _exportBackup(context),
+                            icon: const Icon(Icons.file_upload_outlined),
+                            label: const Text('Export file'),
+                          ),
+                        ),
+                        const SizedBox(width: 12),
+                        Expanded(
+                          child: OutlinedButton.icon(
+                            onPressed: () => _restoreBackup(context),
+                            icon: const Icon(Icons.restore_outlined),
+                            label: const Text('Restore file'),
+                          ),
+                        ),
+                      ],
+                    ),
+                  ],
+                ),
+              ),
             ),
             const SizedBox(height: 28),
             Text('Appearance', style: theme.textTheme.titleLarge),

@@ -7,6 +7,7 @@ import '../../features/reminders/domain/reminder_delivery_policy.dart';
 import '../../features/settings/domain/app_preferences.dart';
 import '../../features/today/domain/cleaning_task.dart';
 import '../persistence/cleaning_repository.dart';
+import '../persistence/cleaning_backup_codec.dart';
 
 enum ReminderUpdateResult {
   saved,
@@ -70,6 +71,35 @@ class CleaningAppController extends ChangeNotifier {
   String? get reminderWarning => _reminderWarning;
   DateTime get currentTime => _now().toLocal();
   AppPreferences get preferences => _preferences;
+
+  String exportBackup() => CleaningBackupCodec.encode(
+        CleaningSnapshot(
+          goals: _goals,
+          tasks: _tasks,
+          preferences: _preferences,
+        ),
+      );
+
+  Future<bool> restoreBackup(String value) async {
+    try {
+      final snapshot = CleaningBackupCodec.decode(value);
+      _replaceWith(snapshot);
+      _isFirstRun = false;
+      notifyListeners();
+      if (await _persist()) {
+        await _reminderScheduler.configure(_preferences);
+        for (final goal in _goals.where(
+          (goal) => !goal.isArchived && goal.reminder != null,
+        )) {
+          await _reminderScheduler.schedule(goal);
+        }
+        return true;
+      }
+    } on Object {
+      // Keep the current data when the backup is invalid or cannot be saved.
+    }
+    return false;
+  }
 
   Future<void> initialize() async {
     try {

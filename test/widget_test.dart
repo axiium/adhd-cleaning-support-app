@@ -402,6 +402,13 @@ void main() {
     expect(Theme.of(tester.element(heading)).brightness, Brightness.dark);
     expect(find.text('Settings'), findsWidgets);
 
+    await tester.scrollUntilVisible(
+      find.text('Reduce motion'),
+      300,
+      scrollable: find.byType(Scrollable).first,
+    );
+    await tester.drag(find.byType(ListView), const Offset(0, -120));
+    await tester.pump();
     final reduceMotion = find.text('Reduce motion');
     await tester.tap(reduceMotion);
     await tester.pumpAndSettle();
