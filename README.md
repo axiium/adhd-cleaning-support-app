@@ -24,6 +24,52 @@ Completed product slices include:
 Cross-platform cloud synchronization is deferred. No account or cloud service
 is currently required.
 
+### Completed milestone areas
+
+Milestones 1–21 in [`docs/ARCHITECTURE.md`](docs/ARCHITECTURE.md) are complete.
+This includes milestone 11, the persistent appearance and motion preferences;
+it is not remaining work.
+
+The completed areas are:
+
+- Core Today flow, goals, small steps, recurrence, timers, and progress
+- Goal and step editing, archive/restore, reorder, safe deletion, and undo
+- Custom weekday, monthly-date, and annual scheduling
+- Energy-based rescue mode
+- Local reminders with quiet hours, snooze, limits, and gentle persistence
+- Completion history with filters, details, and monthly calendar
+- Starter templates and first-run onboarding
+- Accessibility controls and task search
+- Local JSON backup export/restore through the system file picker
+
+The next active milestone is early user testing with people who experience task
+paralysis. Cross-platform synchronization is deliberately deferred until a
+secure provider, authentication model, encryption approach, and conflict policy
+are selected.
+
+### Recent development updates
+
+Recent completed commits include:
+
+- `7fd32e7` — documented current project status
+- `9ee3007` — safely rolled back failed backup restores
+- `f4f1a6f` — added the user-testing guide
+- `63a318c` — added file-based backup export and restore
+- `e10a058` — added task search and filters
+- `26c5d40` — expanded accessibility controls
+- `ad72b4c` — added the monthly completion calendar
+
+### Known limitations
+
+- The current package is an Android debug build for user testing.
+- iOS source compatibility is the goal, but iOS packaging and device testing
+  have not yet been completed.
+- Reminders require notification permission and device support for scheduled
+  notifications.
+- Backup files are local and user-managed; there is no automatic cloud copy.
+- Synchronization, accounts, analytics, and production error reporting are not
+  active.
+
 ## Development baseline
 
 The prototype uses **Flutter and Dart** so Android and iOS can share one codebase. It starts with a dependency-light, feature-first structure and an offline-first product direction.
@@ -94,7 +140,8 @@ The APK is generated at
 ### Verification status
 
 The current project passes Flutter analysis and the complete automated test
-suite. The Android debug APK builds successfully on the development machine.
+suite: 52 tests currently pass. The Android debug APK builds successfully on
+the development machine.
 
 ## 0. Remaining work
 
