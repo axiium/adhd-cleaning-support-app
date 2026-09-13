@@ -2,6 +2,28 @@
 
 Early development documentation for a cross-platform mobile app designed to help people with ADHD-related task initiation and cleaning paralysis.
 
+## Current status
+
+The project has a working Android prototype and is ready for early user
+testing. It is intentionally offline-first and stores data locally on the
+device. The current build is not a production release and should not be used
+as medical advice or as a replacement for professional care.
+
+Completed product slices include:
+
+- Daily, weekly, monthly, and yearly cleaning goals with custom schedules
+- Small steps with editing, archiving, reordering, deletion confirmation, and undo
+- Today view with progress, skip-for-now, timers, and energy-based rescue mode
+- Optional gentle reminders with quiet hours, snooze, frequency limits, and persistence after repeated skips
+- Completion history with filters, details, and a monthly calendar
+- Room-based starter templates and first-run onboarding
+- Accessibility preferences for text size, contrast, reduced motion, haptics, and screen-reader-friendly labels
+- Task search and filters for room, energy, cadence, and duration
+- Local JSON backup export and restore through the system file picker
+
+Cross-platform cloud synchronization is deferred. No account or cloud service
+is currently required.
+
 ## Development baseline
 
 The prototype uses **Flutter and Dart** so Android and iOS can share one codebase. It starts with a dependency-light, feature-first structure and an offline-first product direction.
@@ -44,17 +66,42 @@ task is completed.
 
 ### Local setup
 
-Flutter is not currently installed in this development environment. After installing the Flutter SDK and Android Studio, run:
+Install Flutter and Android Studio with Android SDK command-line tools, then run:
 
 ```powershell
 flutter doctor
-flutter create --org com.axiium --project-name adhd_cleaning_support --platforms android,ios .
 flutter pub get
+flutter analyze
 flutter test
 flutter run
 ```
 
-The application source is under `lib/`, and the architectural baseline is documented in `docs/ARCHITECTURE.md`.
+The application source is under `lib/`. The architecture and implementation
+milestones are documented in `docs/ARCHITECTURE.md`.
+
+### Android user-testing build
+
+Create a fresh debug APK with:
+
+```powershell
+flutter build apk --debug
+```
+
+The APK is generated at
+`build/app/outputs/flutter-apk/app-debug.apk`. Tester instructions are in
+[`docs/USER_TESTING.md`](docs/USER_TESTING.md).
+
+### Verification status
+
+The current project passes Flutter analysis and the complete automated test
+suite. The Android debug APK builds successfully on the development machine.
+
+## 0. Remaining work
+
+The next product work is early user testing with people who experience task
+paralysis. Feedback should guide wording, task sizing, reminder behavior, and
+onboarding before release preparation begins. Cloud synchronization remains
+deferred until there is a clear privacy, security, and provider decision.
 
 ## 1. Product idea
 
