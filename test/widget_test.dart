@@ -536,6 +536,28 @@ void main() {
       findsOneWidget,
     );
   });
+
+  testWidgets('a new user can skip onboarding and enter the app',
+      (tester) async {
+    await tester.pumpWidget(
+      CleaningSupportApp(
+        repository: MemoryCleaningRepository(),
+        reminderScheduler: MemoryReminderScheduler(),
+      ),
+    );
+    await tester.pumpAndSettle();
+
+    expect(find.text('Let’s make this easier to begin.'), findsOneWidget);
+    await tester.drag(find.byType(ListView), const Offset(0, -600));
+    await tester.pump();
+    await tester.ensureVisible(find.text('Start gently'));
+    expect(find.text('Start gently'), findsOneWidget);
+    await tester.ensureVisible(find.text('Skip setup for now'));
+    await tester.tap(find.text('Skip setup for now'));
+    await tester.pumpAndSettle();
+
+    expect(find.text('Today'), findsWidgets);
+  });
 }
 
 Future<void> _pumpSeededApp(

@@ -33,6 +33,7 @@ class CleaningAppController extends ChangeNotifier {
   AppPreferences _preferences = const AppPreferences();
 
   bool _isLoading = true;
+  bool _isFirstRun = false;
   String? _storageWarning;
   String? _reminderWarning;
 
@@ -64,6 +65,7 @@ class CleaningAppController extends ChangeNotifier {
       );
   List<CleaningTask> get allTasks => List.unmodifiable(_tasks);
   bool get isLoading => _isLoading;
+  bool get isFirstRun => _isFirstRun;
   String? get storageWarning => _storageWarning;
   String? get reminderWarning => _reminderWarning;
   DateTime get currentTime => _now().toLocal();
@@ -72,6 +74,7 @@ class CleaningAppController extends ChangeNotifier {
   Future<void> initialize() async {
     try {
       final storedSnapshot = await _repository.load();
+      _isFirstRun = storedSnapshot == null;
       final snapshot = storedSnapshot ?? CleaningSnapshot.seeded();
       _replaceWith(snapshot);
 
@@ -99,6 +102,32 @@ class CleaningAppController extends ChangeNotifier {
 
     _isLoading = false;
     notifyListeners();
+  }
+
+  Future<bool> finishOnboarding(
+    List<CleaningGoal> goals,
+    List<CleaningTask> tasks,
+  ) async {
+    final previousGoals = List<CleaningGoal>.of(_goals);
+    final previousTasks = List<CleaningTask>.of(_tasks);
+    _goals
+      ..clear()
+      ..addAll(goals);
+    _tasks
+      ..clear()
+      ..addAll(tasks);
+    _isFirstRun = false;
+    notifyListeners();
+    if (await _persist()) return true;
+    _goals
+      ..clear()
+      ..addAll(previousGoals);
+    _tasks
+      ..clear()
+      ..addAll(previousTasks);
+    _isFirstRun = true;
+    notifyListeners();
+    return false;
   }
 
   CleaningGoal? goalById(String id) {

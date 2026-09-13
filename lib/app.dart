@@ -10,6 +10,7 @@ import 'core/state/cleaning_app_scope.dart';
 import 'features/reminders/application/reminder_scheduler.dart';
 import 'features/reminders/infrastructure/local_notification_reminder_scheduler.dart';
 import 'features/settings/domain/app_preferences.dart';
+import 'features/onboarding/presentation/onboarding_screen.dart';
 import 'home_shell.dart';
 
 class CleaningSupportApp extends StatefulWidget {
@@ -109,7 +110,9 @@ class _CleaningSupportAppState extends State<CleaningSupportApp>
                 child: child!,
               );
             },
-            home: const HomeShell(),
+            home: _controller.isFirstRun
+                ? const OnboardingScreen()
+                : const HomeShell(),
           );
         },
       ),
