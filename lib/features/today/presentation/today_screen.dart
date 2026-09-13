@@ -66,6 +66,23 @@ class _TodayScreenState extends State<TodayScreen> {
     );
   }
 
+  Future<void> _skipFocusedTask(CleaningTask task) async {
+    final saved = await CleaningAppScope.of(context).skipTask(task.id);
+    if (!mounted) return;
+    if (saved) {
+      setState(() => _focusedIndex++);
+    }
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: Text(
+          saved
+              ? 'Skipped for now. You can come back when you are ready.'
+              : 'That skip could not be saved. Please try again.',
+        ),
+      ),
+    );
+  }
+
   void _chooseAnotherTask(int pendingCount) {
     if (pendingCount < 2) return;
     setState(() => _focusedIndex = (_focusedIndex + 1) % pendingCount);
@@ -185,6 +202,7 @@ class _TodayScreenState extends State<TodayScreen> {
                     'Cleaning goal',
                 canChooseAnother: recommendedTasks.length > 1,
                 onComplete: () => _completeFocusedTask(focusedTask),
+                onSkip: () => _skipFocusedTask(focusedTask),
                 onStartTimer: () => _startTimer(
                   focusedTask,
                   controller.goalById(focusedTask.goalId)?.title ??
@@ -398,6 +416,7 @@ class _FocusCard extends StatelessWidget {
     required this.goalTitle,
     required this.canChooseAnother,
     required this.onComplete,
+    required this.onSkip,
     required this.onStartTimer,
     required this.onChooseAnother,
   });
@@ -407,6 +426,7 @@ class _FocusCard extends StatelessWidget {
   final String goalTitle;
   final bool canChooseAnother;
   final VoidCallback onComplete;
+  final VoidCallback onSkip;
   final VoidCallback onStartTimer;
   final VoidCallback onChooseAnother;
 
@@ -462,6 +482,13 @@ class _FocusCard extends StatelessWidget {
               child: TextButton(
                 onPressed: canChooseAnother ? onChooseAnother : null,
                 child: const Text('Choose another'),
+              ),
+            ),
+            SizedBox(
+              width: double.infinity,
+              child: TextButton(
+                onPressed: onSkip,
+                child: const Text('Skip for now'),
               ),
             ),
           ],

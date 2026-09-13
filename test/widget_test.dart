@@ -209,12 +209,17 @@ void main() {
       find.text('Off — no notification unless you choose one.'),
       findsOneWidget,
     );
-    await tester.tap(find.byType(Switch));
+    await tester.tap(find.byType(Switch).first);
     await tester.pumpAndSettle();
     await tester.tap(find.text('OK'));
     await tester.pumpAndSettle();
 
     expect(find.text('Every day at 6:00 PM'), findsOneWidget);
+    expect(find.text('Gentle persistence'), findsOneWidget);
+    expect(
+      find.text('Offer a quiet follow-up after repeated skips.'),
+      findsOneWidget,
+    );
     expect(find.text('Gentle reminder scheduled.'), findsOneWidget);
     expect(scheduler.scheduledGoalIds, contains('kitchen-usable'));
 
@@ -227,7 +232,7 @@ void main() {
     );
     expect(scheduler.shownTestGoalIds, contains('kitchen-usable'));
 
-    await tester.tap(find.byType(Switch));
+    await tester.tap(find.byType(Switch).first);
     await tester.pumpAndSettle();
 
     expect(
@@ -464,6 +469,47 @@ void main() {
     await tester.pumpAndSettle();
     expect(find.text('Do one thing'), findsOneWidget);
     expect(find.text('Clear one section of the counter'), findsWidgets);
+  });
+
+  testWidgets('quiet hours and snooze controls are available in settings',
+      (tester) async {
+    await _pumpSeededApp(tester);
+    await tester.tap(find.byIcon(Icons.settings_outlined));
+    await tester.pumpAndSettle();
+
+    await tester.scrollUntilVisible(
+      find.text('Gentle reminders'),
+      300,
+      scrollable: find.byType(Scrollable).first,
+    );
+    expect(find.text('Active reminder limit'), findsOneWidget);
+    expect(find.text('Snooze length'), findsOneWidget);
+    await tester.tap(find.text('Quiet hours'));
+    await tester.pumpAndSettle();
+
+    expect(find.text('Quiet hours begin'), findsOneWidget);
+    expect(find.text('Reminders resume'), findsOneWidget);
+    await tester.scrollUntilVisible(
+      find.text('1 hour'),
+      200,
+      scrollable: find.byType(Scrollable).first,
+    );
+    expect(find.text('15 min'), findsOneWidget);
+    expect(find.text('30 min'), findsOneWidget);
+    expect(find.text('1 hour'), findsOneWidget);
+  });
+
+  testWidgets('a task can be skipped for now', (tester) async {
+    await _pumpSeededApp(tester);
+    await tester.ensureVisible(find.text('Skip for now'));
+    await tester.pump();
+    await tester.tap(find.text('Skip for now'));
+    await tester.pumpAndSettle();
+
+    expect(
+      find.text('Skipped for now. You can come back when you are ready.'),
+      findsOneWidget,
+    );
   });
 }
 

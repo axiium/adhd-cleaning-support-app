@@ -10,6 +10,7 @@ class CleaningTask {
     required this.energyLevel,
     this.completions = const [],
     this.isArchived = false,
+    this.skips = const [],
   });
 
   final String id;
@@ -19,6 +20,7 @@ class CleaningTask {
   final EnergyLevel energyLevel;
   final List<DateTime> completions;
   final bool isArchived;
+  final List<DateTime> skips;
 
   bool isCompleteFor(GoalCadence cadence, DateTime now) {
     return completions.any(
@@ -35,6 +37,7 @@ class CleaningTask {
       energyLevel: energyLevel,
       completions: List.unmodifiable([...completions, time.toUtc()]),
       isArchived: isArchived,
+      skips: skips,
     );
   }
 
@@ -55,6 +58,7 @@ class CleaningTask {
         ),
       ),
       isArchived: isArchived,
+      skips: skips,
     );
   }
 
@@ -67,6 +71,28 @@ class CleaningTask {
       energyLevel: energyLevel,
       completions: completions,
       isArchived: isArchived,
+      skips: skips,
     );
+  }
+
+  CleaningTask skippedAt(DateTime time) {
+    return CleaningTask(
+      id: id,
+      title: title,
+      goalId: goalId,
+      estimatedMinutes: estimatedMinutes,
+      energyLevel: energyLevel,
+      completions: completions,
+      isArchived: isArchived,
+      skips: List.unmodifiable([...skips, time.toUtc()]),
+    );
+  }
+
+  int skipsInPeriod(GoalCadence cadence, DateTime now) {
+    return skips
+        .where(
+          (skip) => isInSameRecurrencePeriod(skip, now, cadence),
+        )
+        .length;
   }
 }

@@ -8,6 +8,10 @@ class GoalReminder {
     required this.weekday,
     required this.dayOfMonth,
     required this.month,
+    this.escalationEnabled = false,
+    this.escalateAfterSkips = 3,
+    this.escalationDelayMinutes = 60,
+    this.maxEscalationsPerPeriod = 2,
   });
 
   factory GoalReminder.fromLocalTime({
@@ -30,6 +34,33 @@ class GoalReminder {
   final int weekday;
   final int dayOfMonth;
   final int month;
+  final bool escalationEnabled;
+  final int escalateAfterSkips;
+  final int escalationDelayMinutes;
+  final int maxEscalationsPerPeriod;
+
+  GoalReminder copyWith({
+    int? hour,
+    int? minute,
+    bool? escalationEnabled,
+    int? escalateAfterSkips,
+    int? escalationDelayMinutes,
+    int? maxEscalationsPerPeriod,
+  }) {
+    return GoalReminder(
+      hour: hour ?? this.hour,
+      minute: minute ?? this.minute,
+      weekday: weekday,
+      dayOfMonth: dayOfMonth,
+      month: month,
+      escalationEnabled: escalationEnabled ?? this.escalationEnabled,
+      escalateAfterSkips: escalateAfterSkips ?? this.escalateAfterSkips,
+      escalationDelayMinutes:
+          escalationDelayMinutes ?? this.escalationDelayMinutes,
+      maxEscalationsPerPeriod:
+          maxEscalationsPerPeriod ?? this.maxEscalationsPerPeriod,
+    );
+  }
 
   GoalReminder alignedWith(GoalSchedule schedule) {
     return GoalReminder(
@@ -38,6 +69,10 @@ class GoalReminder {
       weekday: schedule.weekday,
       dayOfMonth: schedule.dayOfMonth,
       month: schedule.month,
+      escalationEnabled: escalationEnabled,
+      escalateAfterSkips: escalateAfterSkips,
+      escalationDelayMinutes: escalationDelayMinutes,
+      maxEscalationsPerPeriod: maxEscalationsPerPeriod,
     );
   }
 

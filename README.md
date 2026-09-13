@@ -31,6 +31,17 @@ task. Exact matches are shown first, followed by gentler options; rescue mode
 never recommends work above the selected energy and does not save or judge the
 temporary choice.
 
+Reminder controls include optional quiet hours, a cap on how many goals may
+send reminders, and a configurable 15-, 30-, or 60-minute Snooze action on the
+notification itself. Reminders that would occur during quiet hours wait until
+the quiet period ends, including snoozed notifications.
+
+For goals that need a little more support, gentle persistence can be enabled
+per reminder. The user chooses how many explicit “Skip for now” actions trigger
+a follow-up, how long to wait, and how many follow-ups are allowed in the
+current recurrence period. Follow-ups remain silent, capped, and stop when the
+task is completed.
+
 ### Local setup
 
 Flutter is not currently installed in this development environment. After installing the Flutter SDK and Android Studio, run:
@@ -183,8 +194,8 @@ Define the smallest clickable prototype around one loop:
 
 > Create a goal → receive one small task → start or skip it → mark it complete → see gentle progress.
 
-The next product slice is finishing gentle reminder controls with quiet hours,
-snooze behavior, and frequency limits.
+The next product slice is expanding completion history with useful filters and
+detail while keeping it free of streak pressure.
 
 ---
 

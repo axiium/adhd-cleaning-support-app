@@ -3,6 +3,7 @@ import 'package:flutter/foundation.dart';
 import '../../features/goals/domain/cleaning_goal.dart';
 import '../../features/reminders/application/reminder_scheduler.dart';
 import '../../features/reminders/domain/goal_reminder.dart';
+import '../../features/reminders/domain/reminder_delivery_policy.dart';
 import '../../features/settings/domain/app_preferences.dart';
 import '../../features/today/domain/cleaning_task.dart';
 import '../persistence/cleaning_repository.dart';
@@ -12,6 +13,7 @@ enum ReminderUpdateResult {
   permissionDenied,
   schedulingFailed,
   storageFailed,
+  limitReached,
 }
 
 class CleaningAppController extends ChangeNotifier {
@@ -83,6 +85,7 @@ class CleaningAppController extends ChangeNotifier {
     }
 
     try {
+      await _reminderScheduler.configure(_preferences);
       await _reminderScheduler.initialize();
       for (final goal in _goals.where(
         (goal) => !goal.isArchived && goal.reminder != null,
@@ -136,6 +139,15 @@ class CleaningAppController extends ChangeNotifier {
     }
 
     if (reminder != null) {
+      final currentlyEnabled = _goals
+          .where((goal) => goal.reminder != null && goal.id != goalId)
+          .length;
+      if (!ReminderDeliveryPolicy.canEnableReminder(
+        currentlyEnabled: currentlyEnabled,
+        preferences: _preferences,
+      )) {
+        return ReminderUpdateResult.limitReached;
+      }
       try {
         if (!await _reminderScheduler.requestPermission()) {
           return ReminderUpdateResult.permissionDenied;
@@ -204,14 +216,50 @@ class CleaningAppController extends ChangeNotifier {
   }
 
   Future<bool> updatePreferences(AppPreferences preferences) async {
+    final enabledReminders =
+        _goals.where((goal) => goal.reminder != null).length;
+    if (preferences.maxActiveReminders < enabledReminders) return false;
+
     final previousPreferences = _preferences;
+    final reminderSettingsChanged = _reminderSettingsChanged(
+      previousPreferences,
+      preferences,
+    );
     _preferences = preferences;
     notifyListeners();
-    if (await _persist()) return true;
+    if (await _persist()) {
+      if (reminderSettingsChanged) {
+        try {
+          await _reminderScheduler.configure(preferences);
+          for (final goal in _goals.where(
+            (goal) => !goal.isArchived && goal.reminder != null,
+          )) {
+            await _reminderScheduler.schedule(goal);
+          }
+          _reminderWarning = null;
+        } on Object {
+          _reminderWarning =
+              'Your settings were saved, but reminders could not be refreshed.';
+          notifyListeners();
+        }
+      }
+      return true;
+    }
 
     _preferences = previousPreferences;
     notifyListeners();
     return false;
+  }
+
+  bool _reminderSettingsChanged(
+    AppPreferences previous,
+    AppPreferences next,
+  ) {
+    return previous.quietHoursEnabled != next.quietHoursEnabled ||
+        previous.quietStartMinute != next.quietStartMinute ||
+        previous.quietEndMinute != next.quietEndMinute ||
+        previous.maxActiveReminders != next.maxActiveReminders ||
+        previous.snoozeMinutes != next.snoozeMinutes;
   }
 
   Future<bool> updateGoal(CleaningGoal goal) async {
@@ -261,6 +309,16 @@ class CleaningAppController extends ChangeNotifier {
 
     final previousGoals = List<CleaningGoal>.of(_goals);
     final previousTasks = List<CleaningTask>.of(_tasks);
+    try {
+      for (final task in previousTasks.where((task) => task.goalId == goalId)) {
+        await _reminderScheduler.cancelEscalations(task.id);
+      }
+    } on Object {
+      _reminderWarning =
+          'That goal could not be removed because a follow-up reminder stayed active.';
+      notifyListeners();
+      return false;
+    }
     _goals.removeWhere((existing) => existing.id == goalId);
     _tasks.removeWhere((task) => task.goalId == goalId);
     notifyListeners();
@@ -299,6 +357,16 @@ class CleaningAppController extends ChangeNotifier {
         notifyListeners();
         return false;
       }
+    }
+    try {
+      for (final task in _tasks.where((task) => task.goalId == goalId)) {
+        await _reminderScheduler.cancelEscalations(task.id);
+      }
+    } on Object {
+      _reminderWarning =
+          'That goal could not be archived because a follow-up reminder stayed active.';
+      notifyListeners();
+      return false;
     }
 
     _goals[index] = previousGoal.withArchived(true);
@@ -399,6 +467,15 @@ class CleaningAppController extends ChangeNotifier {
     final index = _tasks.indexWhere((task) => task.id == taskId);
     if (index == -1) return true;
 
+    try {
+      await _reminderScheduler.cancelEscalations(taskId);
+    } on Object {
+      _reminderWarning =
+          'That step could not be removed because a follow-up reminder stayed active.';
+      notifyListeners();
+      return false;
+    }
+
     final previousTask = _tasks[index];
     _tasks.removeAt(index);
     notifyListeners();
@@ -412,6 +489,14 @@ class CleaningAppController extends ChangeNotifier {
   Future<bool> archiveTask(String taskId) async {
     final index = _tasks.indexWhere((task) => task.id == taskId);
     if (index == -1 || _tasks[index].isArchived) return true;
+    try {
+      await _reminderScheduler.cancelEscalations(taskId);
+    } on Object {
+      _reminderWarning =
+          'That step could not be archived because its follow-up reminder stayed active.';
+      notifyListeners();
+      return false;
+    }
     return _replaceTaskAndPersist(index, _tasks[index].withArchived(true));
   }
 
@@ -452,7 +537,57 @@ class CleaningAppController extends ChangeNotifier {
     final index = _tasks.indexWhere((task) => task.id == taskId);
     if (index == -1 || isTaskComplete(_tasks[index])) return true;
 
-    return _replaceTaskAndPersist(index, _tasks[index].completedAt(_now()));
+    final saved = await _replaceTaskAndPersist(
+      index,
+      _tasks[index].completedAt(_now()),
+    );
+    if (saved) {
+      try {
+        await _reminderScheduler.cancelEscalations(taskId);
+      } on Object {
+        _reminderWarning =
+            'Completed, but a follow-up reminder could not be canceled.';
+        notifyListeners();
+      }
+    }
+    return saved;
+  }
+
+  Future<bool> skipTask(String taskId) async {
+    final index = _tasks.indexWhere((task) => task.id == taskId);
+    if (index == -1) return false;
+    final task = _tasks[index];
+    final goal = goalById(task.goalId);
+    if (goal == null) return false;
+    final skippedTask = task.skippedAt(_now());
+    final saved = await _replaceTaskAndPersist(index, skippedTask);
+    if (!saved) return false;
+
+    final reminder = goal.reminder;
+    final skipsInPeriod = skippedTask.skipsInPeriod(goal.cadence, _now());
+    if (reminder == null ||
+        !reminder.escalationEnabled ||
+        skipsInPeriod < reminder.escalateAfterSkips) {
+      return true;
+    }
+
+    final occurrence = skipsInPeriod - reminder.escalateAfterSkips + 1;
+    if (occurrence > reminder.maxEscalationsPerPeriod) return true;
+    try {
+      await _reminderScheduler.scheduleEscalation(
+        goal,
+        skippedTask,
+        _now().add(Duration(minutes: reminder.escalationDelayMinutes)),
+        occurrence,
+      );
+      _reminderWarning = null;
+      notifyListeners();
+    } on Object {
+      _reminderWarning =
+          'The skip was saved, but its gentle follow-up could not be scheduled.';
+      notifyListeners();
+    }
+    return true;
   }
 
   Future<bool> undoTaskCompletion(String taskId) async {

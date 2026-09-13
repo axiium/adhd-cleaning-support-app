@@ -623,6 +623,10 @@ class GoalDetailScreen extends StatelessWidget {
       weekday: goal.schedule.weekday,
       dayOfMonth: goal.schedule.dayOfMonth,
       month: goal.schedule.month,
+      escalationEnabled: existing?.escalationEnabled ?? false,
+      escalateAfterSkips: existing?.escalateAfterSkips ?? 3,
+      escalationDelayMinutes: existing?.escalationDelayMinutes ?? 60,
+      maxEscalationsPerPeriod: existing?.maxEscalationsPerPeriod ?? 2,
     );
     final result = await CleaningAppScope.of(context).setGoalReminder(
       goal.id,
@@ -630,6 +634,24 @@ class GoalDetailScreen extends StatelessWidget {
     );
     if (!context.mounted) return;
     _showReminderResult(context, result, enabled: true);
+  }
+
+  Future<void> _updateReminderSettings(
+    BuildContext context,
+    CleaningGoal goal,
+    GoalReminder reminder,
+  ) async {
+    final result = await CleaningAppScope.of(
+      context,
+    ).setGoalReminder(goal.id, reminder);
+    if (!context.mounted) return;
+    if (result != ReminderUpdateResult.saved) {
+      _showReminderResult(context, result, enabled: true);
+    } else {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Reminder settings saved.')),
+      );
+    }
   }
 
   Future<void> _disableReminder(
@@ -661,6 +683,8 @@ class GoalDetailScreen extends StatelessWidget {
         'That test reminder could not be shown. Please try again.',
       ReminderUpdateResult.storageFailed =>
         'That test reminder could not be shown. Please try again.',
+      ReminderUpdateResult.limitReached =>
+        'Your reminder limit is full. Change it in Settings first.',
     };
     ScaffoldMessenger.of(context)
         .showSnackBar(SnackBar(content: Text(message)));
@@ -680,6 +704,8 @@ class GoalDetailScreen extends StatelessWidget {
         'That reminder could not be scheduled. Please try again.',
       ReminderUpdateResult.storageFailed =>
         'That reminder could not be saved. Please try again.',
+      ReminderUpdateResult.limitReached =>
+        'Your reminder limit is full. Change it in Settings first.',
     };
     ScaffoldMessenger.of(context)
         .showSnackBar(SnackBar(content: Text(message)));
@@ -793,6 +819,8 @@ class GoalDetailScreen extends StatelessWidget {
                 onEnableOrChange: () => _chooseReminder(context, goal),
                 onDisable: () => _disableReminder(context, goal),
                 onSendTest: () => _sendTestReminder(context, goal),
+                onUpdateSettings: (reminder) =>
+                    _updateReminderSettings(context, goal, reminder),
               ),
               const SizedBox(height: 20),
               Text(
@@ -909,6 +937,7 @@ class _ReminderCard extends StatelessWidget {
     required this.onEnableOrChange,
     required this.onDisable,
     required this.onSendTest,
+    required this.onUpdateSettings,
   });
 
   final CleaningGoal goal;
@@ -916,6 +945,7 @@ class _ReminderCard extends StatelessWidget {
   final VoidCallback onEnableOrChange;
   final VoidCallback onDisable;
   final VoidCallback onSendTest;
+  final ValueChanged<GoalReminder> onUpdateSettings;
 
   @override
   Widget build(BuildContext context) {
@@ -975,6 +1005,105 @@ class _ReminderCard extends StatelessWidget {
                     child: const Text('Change time'),
                   ),
                 ],
+              ),
+            if (reminder != null) ...[
+              const Divider(height: 1, indent: 40),
+              SwitchListTile(
+                contentPadding: const EdgeInsets.only(left: 40, right: 8),
+                title: const Text('Gentle persistence'),
+                subtitle: const Text(
+                  'Offer a quiet follow-up after repeated skips.',
+                ),
+                value: reminder.escalationEnabled,
+                onChanged: (enabled) => onUpdateSettings(
+                  reminder.copyWith(escalationEnabled: enabled),
+                ),
+              ),
+              if (reminder.escalationEnabled) ...[
+                ListTile(
+                  contentPadding: const EdgeInsets.only(left: 40, right: 8),
+                  title: const Text('Start after'),
+                  subtitle: const Text('skips in this recurrence period'),
+                  trailing: DropdownButton<int>(
+                    value: reminder.escalateAfterSkips,
+                    items: const [2, 3, 5]
+                        .map(
+                          (value) => DropdownMenuItem(
+                            value: value,
+                            child: Text('$value'),
+                          ),
+                        )
+                        .toList(),
+                    onChanged: (value) {
+                      if (value != null) {
+                        onUpdateSettings(
+                          reminder.copyWith(escalateAfterSkips: value),
+                        );
+                      }
+                    },
+                  ),
+                ),
+                ListTile(
+                  contentPadding: const EdgeInsets.only(left: 40, right: 8),
+                  title: const Text('Follow up after'),
+                  subtitle: const Text('before trying again'),
+                  trailing: DropdownButton<int>(
+                    value: reminder.escalationDelayMinutes,
+                    items: const [30, 60, 180]
+                        .map(
+                          (value) => DropdownMenuItem(
+                            value: value,
+                            child: Text(value == 60 ? '1 hour' : '$value min'),
+                          ),
+                        )
+                        .toList(),
+                    onChanged: (value) {
+                      if (value != null) {
+                        onUpdateSettings(
+                          reminder.copyWith(escalationDelayMinutes: value),
+                        );
+                      }
+                    },
+                  ),
+                ),
+                ListTile(
+                  contentPadding: const EdgeInsets.only(left: 40, right: 8),
+                  title: const Text('Maximum follow-ups'),
+                  subtitle: const Text('per recurrence period'),
+                  trailing: DropdownButton<int>(
+                    value: reminder.maxEscalationsPerPeriod,
+                    items: const [1, 2, 3]
+                        .map(
+                          (value) => DropdownMenuItem(
+                            value: value,
+                            child: Text('$value'),
+                          ),
+                        )
+                        .toList(),
+                    onChanged: (value) {
+                      if (value != null) {
+                        onUpdateSettings(
+                          reminder.copyWith(maxEscalationsPerPeriod: value),
+                        );
+                      }
+                    },
+                  ),
+                ),
+                Padding(
+                  padding: const EdgeInsets.fromLTRB(40, 0, 16, 8),
+                  child: Text(
+                    'Up to ${reminder.maxEscalationsPerPeriod} follow-ups per recurrence period.',
+                    style: theme.textTheme.bodySmall,
+                  ),
+                ),
+              ],
+            ],
+            if (reminder == null)
+              const Padding(
+                padding: EdgeInsets.fromLTRB(40, 4, 16, 4),
+                child: Text(
+                  'Turn on this reminder to customize gentle persistence after repeated skips.',
+                ),
               ),
             if (warning != null)
               Padding(

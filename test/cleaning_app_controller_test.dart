@@ -358,4 +358,122 @@ void main() {
     controller.dispose();
     restored.dispose();
   });
+
+  test('reminder limit prevents another goal from enabling notifications',
+      () async {
+    final scheduler = MemoryReminderScheduler();
+    final controller = CleaningAppController(
+      repository: MemoryCleaningRepository.seeded(),
+      reminderScheduler: scheduler,
+    );
+    await controller.initialize();
+    expect(
+      await controller.updatePreferences(
+        controller.preferences.copyWith(maxActiveReminders: 1),
+      ),
+      isTrue,
+    );
+    const reminder = GoalReminder(
+      hour: 18,
+      minute: 0,
+      weekday: DateTime.saturday,
+      dayOfMonth: 12,
+      month: DateTime.september,
+    );
+
+    expect(
+      await controller.setGoalReminder('kitchen-usable', reminder),
+      ReminderUpdateResult.saved,
+    );
+    expect(
+      await controller.setGoalReminder('bathroom-reset', reminder),
+      ReminderUpdateResult.limitReached,
+    );
+    expect(controller.goalById('bathroom-reset')?.reminder, isNull);
+    controller.dispose();
+  });
+
+  test('quiet hours and snooze settings persist and refresh reminders',
+      () async {
+    final repository = MemoryCleaningRepository.seeded();
+    final scheduler = MemoryReminderScheduler();
+    final controller = CleaningAppController(
+      repository: repository,
+      reminderScheduler: scheduler,
+    );
+    await controller.initialize();
+    await controller.setGoalReminder(
+      'kitchen-usable',
+      const GoalReminder(
+        hour: 22,
+        minute: 0,
+        weekday: DateTime.saturday,
+        dayOfMonth: 12,
+        month: DateTime.september,
+      ),
+    );
+
+    final updated = controller.preferences.copyWith(
+      quietHoursEnabled: true,
+      quietStartMinute: 20 * 60,
+      quietEndMinute: 9 * 60,
+      snoozeMinutes: 60,
+    );
+    expect(await controller.updatePreferences(updated), isTrue);
+    expect(scheduler.configuredPreferences.quietHoursEnabled, isTrue);
+    expect(scheduler.configuredPreferences.snoozeMinutes, 60);
+    expect(
+      scheduler.scheduledGoalIds.where((id) => id == 'kitchen-usable'),
+      hasLength(2),
+    );
+
+    final restored = CleaningAppController(repository: repository);
+    await restored.initialize();
+    expect(restored.preferences.quietStartMinute, 20 * 60);
+    expect(restored.preferences.quietEndMinute, 9 * 60);
+    expect(restored.preferences.snoozeMinutes, 60);
+    controller.dispose();
+    restored.dispose();
+  });
+
+  test(
+      'repeated skips create capped gentle follow-ups and completion cancels them',
+      () async {
+    final scheduler = MemoryReminderScheduler();
+    final controller = CleaningAppController(
+      repository: MemoryCleaningRepository.seeded(),
+      reminderScheduler: scheduler,
+      now: () => DateTime(2026, 9, 12, 10),
+    );
+    await controller.initialize();
+    await controller.setGoalReminder(
+      'kitchen-usable',
+      const GoalReminder(
+        hour: 18,
+        minute: 0,
+        weekday: DateTime.saturday,
+        dayOfMonth: 12,
+        month: DateTime.september,
+        escalationEnabled: true,
+        escalateAfterSkips: 3,
+        escalationDelayMinutes: 60,
+        maxEscalationsPerPeriod: 2,
+      ),
+    );
+
+    for (var index = 0; index < 5; index++) {
+      expect(await controller.skipTask('kitchen-counter'), isTrue);
+    }
+    expect(scheduler.escalatedTaskIds, ['kitchen-counter', 'kitchen-counter']);
+    expect(
+      controller.allTasks
+          .firstWhere((task) => task.id == 'kitchen-counter')
+          .skips,
+      hasLength(5),
+    );
+
+    expect(await controller.completeTask('kitchen-counter'), isTrue);
+    expect(scheduler.cancelledEscalationTaskIds, contains('kitchen-counter'));
+    controller.dispose();
+  });
 }

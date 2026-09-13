@@ -104,6 +104,23 @@ local notifications behave consistently in every month. Reminder recurrence is
 aligned to the goal schedule whenever a goal is edited, and older snapshots are
 migrated using their reminder date or the migration date as a fallback.
 
+Reminder delivery preferences live in the same versioned `AppPreferences`
+snapshot. Quiet hours adjust the next local delivery to the end of the quiet
+window, and changing reminder preferences reschedules active goal reminders.
+An active-reminder cap prevents enabling more notification streams than the
+chosen limit. Android and iOS notification actions carry a small JSON payload
+so Snooze can schedule a one-off local notification from either the foreground
+or background callback; the payload includes quiet-hour settings so snoozed
+delivery respects the same boundary without requiring an account or server.
+
+Skip tracking is explicit rather than inferred from an unopened notification:
+each task stores skip timestamps alongside completion timestamps. When a task’s
+skip count reaches its goal reminder threshold, the controller schedules a
+one-off escalation after the configured delay, capped by the configured maximum
+for that recurrence period. Completion cancels outstanding escalation IDs.
+This keeps “more persistent” opt-in, bounded, and reversible through normal
+task completion.
+
 Energy rescue mode is session-only UI state on Today. It receives the same due,
 active, unfinished tasks already eligible for Today and orders exact energy
 matches before lower-energy alternatives. Tasks above the selected energy are
@@ -147,5 +164,6 @@ The first slice proves this loop:
 12. Finish goal and step management with archive, restore, and reorder. (Complete)
 13. Add custom weekday, monthly-date, and annual-date scheduling. (Complete)
 14. Add energy-based rescue mode. (Complete)
-15. Finish quiet hours, snooze, and reminder frequency limits.
-16. Test the interaction with people who experience task paralysis.
+15. Finish quiet hours, snooze, and reminder frequency limits. (Complete)
+16. Expand completion-history filtering and detail.
+17. Test the interaction with people who experience task paralysis.

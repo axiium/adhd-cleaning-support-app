@@ -19,7 +19,7 @@ class SharedPreferencesCleaningRepository implements CleaningRepository {
 
   // Keep the original key so schema version 1 data can be migrated in place.
   static const _storageKey = 'cleaning_snapshot_v1';
-  static const _schemaVersion = 6;
+  static const _schemaVersion = 8;
 
   final SharedPreferencesAsync _preferences;
   final DateTime Function() _now;
@@ -39,6 +39,8 @@ class SharedPreferencesCleaningRepository implements CleaningRepository {
         version != 3 &&
         version != 4 &&
         version != 5 &&
+        version != 6 &&
+        version != 7 &&
         version != _schemaVersion) {
       throw const FormatException('Unsupported cleaning snapshot version.');
     }
@@ -73,6 +75,11 @@ class SharedPreferencesCleaningRepository implements CleaningRepository {
         'theme': snapshot.preferences.theme.name,
         'largerText': snapshot.preferences.largerText,
         'reduceMotion': snapshot.preferences.reduceMotion,
+        'quietHoursEnabled': snapshot.preferences.quietHoursEnabled,
+        'quietStartMinute': snapshot.preferences.quietStartMinute,
+        'quietEndMinute': snapshot.preferences.quietEndMinute,
+        'maxActiveReminders': snapshot.preferences.maxActiveReminders,
+        'snoozeMinutes': snapshot.preferences.snoozeMinutes,
       },
     });
     return _preferences.setString(_storageKey, encoded);
@@ -87,6 +94,11 @@ class SharedPreferencesCleaningRepository implements CleaningRepository {
       ),
       largerText: json['largerText'] as bool? ?? false,
       reduceMotion: json['reduceMotion'] as bool? ?? false,
+      quietHoursEnabled: json['quietHoursEnabled'] as bool? ?? false,
+      quietStartMinute: json['quietStartMinute'] as int? ?? 21 * 60,
+      quietEndMinute: json['quietEndMinute'] as int? ?? 8 * 60,
+      maxActiveReminders: json['maxActiveReminders'] as int? ?? 3,
+      snoozeMinutes: json['snoozeMinutes'] as int? ?? 30,
     );
   }
 
@@ -111,6 +123,10 @@ class SharedPreferencesCleaningRepository implements CleaningRepository {
               'weekday': goal.reminder!.weekday,
               'dayOfMonth': goal.reminder!.dayOfMonth,
               'month': goal.reminder!.month,
+              'escalationEnabled': goal.reminder!.escalationEnabled,
+              'escalateAfterSkips': goal.reminder!.escalateAfterSkips,
+              'escalationDelayMinutes': goal.reminder!.escalationDelayMinutes,
+              'maxEscalationsPerPeriod': goal.reminder!.maxEscalationsPerPeriod,
             },
     };
   }
@@ -155,6 +171,10 @@ class SharedPreferencesCleaningRepository implements CleaningRepository {
       weekday: json['weekday'] as int,
       dayOfMonth: json['dayOfMonth'] as int,
       month: json['month'] as int,
+      escalationEnabled: json['escalationEnabled'] as bool? ?? false,
+      escalateAfterSkips: json['escalateAfterSkips'] as int? ?? 3,
+      escalationDelayMinutes: json['escalationDelayMinutes'] as int? ?? 60,
+      maxEscalationsPerPeriod: json['maxEscalationsPerPeriod'] as int? ?? 2,
     );
   }
 
@@ -169,6 +189,8 @@ class SharedPreferencesCleaningRepository implements CleaningRepository {
       'completions': task.completions
           .map((completion) => completion.toUtc().toIso8601String())
           .toList(),
+      'skips':
+          task.skips.map((skip) => skip.toUtc().toIso8601String()).toList(),
     };
   }
 
@@ -183,6 +205,11 @@ class SharedPreferencesCleaningRepository implements CleaningRepository {
         : (json['completions'] as List<dynamic>)
             .map((value) => DateTime.parse(value as String))
             .toList();
+    final skips = version >= 8
+        ? (json['skips'] as List<dynamic>)
+            .map((value) => DateTime.parse(value as String))
+            .toList()
+        : <DateTime>[];
 
     return CleaningTask(
       id: json['id'] as String,
@@ -192,6 +219,7 @@ class SharedPreferencesCleaningRepository implements CleaningRepository {
       energyLevel: EnergyLevel.values.byName(json['energyLevel'] as String),
       completions: completions,
       isArchived: json['isArchived'] as bool? ?? false,
+      skips: skips,
     );
   }
 }
