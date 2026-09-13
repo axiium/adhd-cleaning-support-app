@@ -7,6 +7,7 @@ import '../../reminders/domain/goal_reminder.dart';
 import '../../today/domain/cleaning_task.dart';
 import '../domain/cleaning_goal.dart';
 import '../domain/goal_schedule.dart';
+import '../domain/starter_templates.dart';
 
 enum _GoalAction { edit, archive, delete }
 
@@ -147,8 +148,116 @@ class GoalsScreen extends StatelessWidget {
                       },
                     ),
             ),
+            IconButton(
+              tooltip: 'Starter templates',
+              onPressed: () => Navigator.of(context).push(
+                MaterialPageRoute<void>(
+                  builder: (context) => const StarterTemplatesScreen(),
+                ),
+              ),
+              icon: const Icon(Icons.auto_awesome_outlined),
+            ),
           ],
         ),
+      ),
+    );
+  }
+}
+
+class StarterTemplatesScreen extends StatelessWidget {
+  const StarterTemplatesScreen({super.key});
+
+  Future<void> _addTemplate(
+      BuildContext context, StarterTemplate template) async {
+    final suffix = DateTime.now().microsecondsSinceEpoch.toString();
+    final controller = CleaningAppScope.of(context);
+    final goal = CleaningGoal(
+      id: 'template-goal-$suffix',
+      title: template.title,
+      room: template.room,
+      cadence: template.cadence,
+      energyLevel: template.energyLevel,
+      schedule: GoalSchedule.fromDate(controller.currentTime),
+    );
+    if (!await controller.addGoal(goal)) {
+      if (context.mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('That starter could not be added.')),
+        );
+      }
+      return;
+    }
+    for (var index = 0; index < template.steps.length; index++) {
+      final step = template.steps[index];
+      await controller.addTask(
+        CleaningTask(
+          id: 'template-step-$suffix-$index',
+          title: step.title,
+          goalId: goal.id,
+          estimatedMinutes: step.estimatedMinutes,
+          energyLevel: step.energyLevel,
+        ),
+      );
+    }
+    if (context.mounted) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+            content: Text(
+                '${template.title} added with ${template.steps.length} small steps.')),
+      );
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    return Scaffold(
+      appBar: AppBar(title: const Text('Starter templates')),
+      body: ListView(
+        padding: const EdgeInsets.fromLTRB(20, 8, 20, 32),
+        children: [
+          Text('A softer place to start.',
+              style: theme.textTheme.headlineSmall),
+          const SizedBox(height: 8),
+          const Text(
+              'Choose a room and we will add a few small, editable steps. You can change or remove anything later.'),
+          const SizedBox(height: 24),
+          for (final template in starterTemplates)
+            Card(
+              margin: const EdgeInsets.only(bottom: 12),
+              color: theme.colorScheme.surfaceContainerHighest,
+              child: Padding(
+                padding: const EdgeInsets.all(16),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(template.room, style: theme.textTheme.labelLarge),
+                    const SizedBox(height: 4),
+                    Text(template.title, style: theme.textTheme.titleMedium),
+                    const SizedBox(height: 8),
+                    Text(
+                        '${template.steps.length} small steps · ${template.cadence.label} · ${template.energyLevel.label}'),
+                    const SizedBox(height: 8),
+                    for (final step in template.steps)
+                      Padding(
+                        padding: const EdgeInsets.only(bottom: 4),
+                        child: Text(
+                            '• ${step.title} (${step.estimatedMinutes} min)'),
+                      ),
+                    const SizedBox(height: 8),
+                    SizedBox(
+                      width: double.infinity,
+                      child: FilledButton.tonalIcon(
+                        onPressed: () => _addTemplate(context, template),
+                        icon: const Icon(Icons.add_rounded),
+                        label: const Text('Add this starter'),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ),
+        ],
       ),
     );
   }

@@ -79,6 +79,21 @@ void main() {
     );
   });
 
+  testWidgets('starter templates add an editable room bundle', (tester) async {
+    await _pumpSeededApp(tester);
+    await tester.tap(find.byIcon(Icons.flag_outlined));
+    await tester.pumpAndSettle();
+    await tester.tap(find.byIcon(Icons.auto_awesome_outlined));
+    await tester.pumpAndSettle();
+
+    expect(find.text('Starter templates'), findsOneWidget);
+    expect(find.text('Kitchen'), findsOneWidget);
+    await tester.tap(find.text('Add this starter').first);
+    await tester.pumpAndSettle();
+
+    expect(find.textContaining('added with 3 small steps'), findsOneWidget);
+  });
+
   testWidgets('a new small step appears on Today', (tester) async {
     await _pumpSeededApp(tester);
 

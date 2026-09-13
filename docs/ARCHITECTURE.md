@@ -166,4 +166,5 @@ The first slice proves this loop:
 14. Add energy-based rescue mode. (Complete)
 15. Finish quiet hours, snooze, and reminder frequency limits. (Complete)
 16. Expand completion-history filtering and detail. (Complete)
-17. Test the interaction with people who experience task paralysis.
+17. Add starter templates organized by room.
+18. Test the interaction with people who experience task paralysis.
