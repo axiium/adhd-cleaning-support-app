@@ -14,6 +14,8 @@ class HistoryScreen extends StatefulWidget {
 class _HistoryScreenState extends State<HistoryScreen> {
   String? _roomFilter;
   _HistoryRange _range = _HistoryRange.all;
+  DateTime? _calendarMonth;
+  DateTime? _selectedCalendarDay;
 
   @override
   Widget build(BuildContext context) {
@@ -31,6 +33,13 @@ class _HistoryScreenState extends State<HistoryScreen> {
       return matchesRoom && matchesRange;
     }).toList();
     final filteredDays = _groupByDay(filteredEntries);
+    final currentDay = _startOfDay(controller.currentTime);
+    final calendarMonth =
+        _calendarMonth ?? DateTime(currentDay.year, currentDay.month);
+    final selectedCalendarDay = _selectedCalendarDay ?? currentDay;
+    final selectedDayEntries = history.entries.where((entry) {
+      return _startOfDay(entry.completedAt) == selectedCalendarDay;
+    }).toList();
     final theme = Theme.of(context);
 
     return Scaffold(
@@ -51,6 +60,27 @@ class _HistoryScreenState extends State<HistoryScreen> {
             ),
             const SizedBox(height: 20),
             _HistorySummary(history: history),
+            const SizedBox(height: 20),
+            _MonthCompletionCalendar(
+              month: calendarMonth,
+              selectedDay: selectedCalendarDay,
+              entries: history.entries,
+              selectedDayEntries: selectedDayEntries,
+              onPreviousMonth: () => setState(() {
+                _calendarMonth =
+                    DateTime(calendarMonth.year, calendarMonth.month - 1);
+                _selectedCalendarDay = null;
+              }),
+              onNextMonth: () => setState(() {
+                _calendarMonth =
+                    DateTime(calendarMonth.year, calendarMonth.month + 1);
+                _selectedCalendarDay = null;
+              }),
+              onDaySelected: (day) => setState(() {
+                _calendarMonth = DateTime(day.year, day.month);
+                _selectedCalendarDay = day;
+              }),
+            ),
             const SizedBox(height: 20),
             _HistoryFilters(
               rooms: {
@@ -115,6 +145,11 @@ class _HistoryScreenState extends State<HistoryScreen> {
         ),
       ),
     );
+  }
+
+  static DateTime _startOfDay(DateTime time) {
+    final local = time.toLocal();
+    return DateTime(local.year, local.month, local.day);
   }
 
   List<CompletionHistoryDay> _groupByDay(
@@ -208,6 +243,159 @@ class _HistoryScreenState extends State<HistoryScreen> {
     'Nov',
     'Dec',
   ];
+}
+
+class _MonthCompletionCalendar extends StatelessWidget {
+  const _MonthCompletionCalendar({
+    required this.month,
+    required this.selectedDay,
+    required this.entries,
+    required this.selectedDayEntries,
+    required this.onPreviousMonth,
+    required this.onNextMonth,
+    required this.onDaySelected,
+  });
+
+  final DateTime month;
+  final DateTime selectedDay;
+  final List<CompletionHistoryEntry> entries;
+  final List<CompletionHistoryEntry> selectedDayEntries;
+  final VoidCallback onPreviousMonth;
+  final VoidCallback onNextMonth;
+  final ValueChanged<DateTime> onDaySelected;
+
+  @override
+  Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    final firstDay = DateTime(month.year, month.month, 1);
+    final daysInMonth = DateTime(month.year, month.month + 1, 0).day;
+    final leadingDays = firstDay.weekday - DateTime.monday;
+    final completedDays = {
+      for (final entry in entries) _startOfDay(entry.completedAt),
+    };
+    final cells = <Widget>[];
+    for (var index = 0; index < leadingDays; index++) {
+      cells.add(const SizedBox.shrink());
+    }
+    for (var day = 1; day <= daysInMonth; day++) {
+      final date = DateTime(month.year, month.month, day);
+      final isSelected = date == _startOfDay(selectedDay);
+      final hasCompletion = completedDays.contains(date);
+      cells.add(
+        InkWell(
+          borderRadius: BorderRadius.circular(12),
+          onTap: () => onDaySelected(date),
+          child: Container(
+            decoration: isSelected
+                ? BoxDecoration(
+                    color: theme.colorScheme.primary,
+                    borderRadius: BorderRadius.circular(12),
+                  )
+                : null,
+            child: Column(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                Text(
+                  '$day',
+                  style: TextStyle(
+                    color: isSelected ? theme.colorScheme.onPrimary : null,
+                    fontWeight: isSelected ? FontWeight.bold : null,
+                  ),
+                ),
+                const SizedBox(height: 3),
+                Icon(
+                  hasCompletion ? Icons.circle : Icons.circle_outlined,
+                  size: 7,
+                  color: isSelected
+                      ? theme.colorScheme.onPrimary
+                      : hasCompletion
+                          ? theme.colorScheme.primary
+                          : Colors.transparent,
+                ),
+              ],
+            ),
+          ),
+        ),
+      );
+    }
+
+    return Card(
+      color: theme.colorScheme.surfaceContainerHighest,
+      child: Padding(
+        padding: const EdgeInsets.fromLTRB(16, 12, 16, 16),
+        child: Column(
+          children: [
+            Row(
+              children: [
+                Expanded(
+                  child: Text(
+                    '${_HistoryScreenState._monthNames[month.month - 1]} ${month.year}',
+                    style: theme.textTheme.titleMedium,
+                  ),
+                ),
+                IconButton(
+                  tooltip: 'Previous month',
+                  onPressed: onPreviousMonth,
+                  icon: const Icon(Icons.chevron_left),
+                ),
+                IconButton(
+                  tooltip: 'Next month',
+                  onPressed: onNextMonth,
+                  icon: const Icon(Icons.chevron_right),
+                ),
+              ],
+            ),
+            Row(
+              children: [
+                for (final label in const ['M', 'T', 'W', 'T', 'F', 'S', 'S'])
+                  Expanded(
+                    child: Center(
+                      child: Text(label, style: theme.textTheme.labelSmall),
+                    ),
+                  ),
+              ],
+            ),
+            const SizedBox(height: 6),
+            GridView.count(
+              crossAxisCount: 7,
+              shrinkWrap: true,
+              physics: const NeverScrollableScrollPhysics(),
+              childAspectRatio: 1.15,
+              children: cells,
+            ),
+            const Divider(height: 20),
+            Align(
+              alignment: Alignment.centerLeft,
+              child: Text(
+                '${_HistoryScreenState._dateLabel(selectedDay, selectedDay)} completions',
+                style: theme.textTheme.titleSmall,
+              ),
+            ),
+            const SizedBox(height: 8),
+            if (selectedDayEntries.isEmpty)
+              const Align(
+                alignment: Alignment.centerLeft,
+                child: Text('No completed goals recorded on this day.'),
+              )
+            else
+              for (final entry in selectedDayEntries)
+                Align(
+                  alignment: Alignment.centerLeft,
+                  child: Padding(
+                    padding: const EdgeInsets.only(bottom: 4),
+                    child: Text('${entry.goalTitle} · ${entry.taskTitle}'),
+                  ),
+                ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  static DateTime _startOfDay(DateTime time) {
+    final local = time.toLocal();
+    return DateTime(local.year, local.month, local.day);
+  }
 }
 
 class _HistorySummary extends StatelessWidget {

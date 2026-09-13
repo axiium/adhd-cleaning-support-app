@@ -265,6 +265,8 @@ void main() {
     await tester.pumpAndSettle();
 
     expect(find.text('What you have done counts.'), findsOneWidget);
+    await tester.drag(find.byType(ListView), const Offset(0, -800));
+    await tester.pump();
     expect(
       find.text('Nothing recorded yet — and there is no catching up to do.'),
       findsOneWidget,
@@ -284,6 +286,8 @@ void main() {
     await tester.tap(find.byIcon(Icons.history_outlined));
     await tester.pumpAndSettle();
 
+    await tester.drag(find.byType(ListView), const Offset(0, -800));
+    await tester.pump();
     expect(find.text('Recent activity'), findsOneWidget);
     await tester.scrollUntilVisible(
       find.text('Clear one section of the counter'),
