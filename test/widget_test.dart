@@ -390,7 +390,7 @@ void main() {
     final initialScale = MediaQuery.textScalerOf(
       tester.element(heading),
     ).scale(16);
-    await tester.tap(find.text('Larger text'));
+    await tester.tap(find.byType(Slider));
     await tester.pumpAndSettle();
     final largerScale = MediaQuery.textScalerOf(
       tester.element(heading),
@@ -507,7 +507,7 @@ void main() {
     await tester.pumpAndSettle();
 
     await tester.scrollUntilVisible(
-      find.text('Gentle reminders'),
+      find.text('Active reminder limit'),
       300,
       scrollable: find.byType(Scrollable).first,
     );

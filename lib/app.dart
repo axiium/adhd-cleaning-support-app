@@ -89,8 +89,8 @@ class _CleaningSupportAppState extends State<CleaningSupportApp>
           return MaterialApp(
             title: 'Cleaning Support',
             debugShowCheckedModeBanner: false,
-            theme: _buildTheme(Brightness.light, preferences.reduceMotion),
-            darkTheme: _buildTheme(Brightness.dark, preferences.reduceMotion),
+            theme: _buildTheme(Brightness.light, preferences),
+            darkTheme: _buildTheme(Brightness.dark, preferences),
             themeMode: switch (preferences.theme) {
               AppThemePreference.system => ThemeMode.system,
               AppThemePreference.light => ThemeMode.light,
@@ -99,8 +99,7 @@ class _CleaningSupportAppState extends State<CleaningSupportApp>
             builder: (context, child) {
               final mediaQuery = MediaQuery.of(context);
               final systemScale = mediaQuery.textScaler.scale(1);
-              final preferredScale =
-                  systemScale * (preferences.largerText ? 1.15 : 1);
+              final preferredScale = systemScale * preferences.textScale;
               return MediaQuery(
                 data: mediaQuery.copyWith(
                   textScaler: TextScaler.linear(preferredScale),
@@ -119,10 +118,11 @@ class _CleaningSupportAppState extends State<CleaningSupportApp>
     );
   }
 
-  ThemeData _buildTheme(Brightness brightness, bool reduceMotion) {
+  ThemeData _buildTheme(Brightness brightness, AppPreferences preferences) {
     final colorScheme = ColorScheme.fromSeed(
       seedColor: const Color(0xFF526E5B),
       brightness: brightness,
+      contrastLevel: preferences.highContrast ? 1.0 : 0.0,
     );
     return ThemeData(
       colorScheme: colorScheme,
@@ -139,7 +139,7 @@ class _CleaningSupportAppState extends State<CleaningSupportApp>
         elevation: 0,
         margin: EdgeInsets.zero,
       ),
-      pageTransitionsTheme: reduceMotion
+      pageTransitionsTheme: preferences.reduceMotion
           ? const PageTransitionsTheme(
               builders: {
                 TargetPlatform.android: _NoPageTransitionsBuilder(),

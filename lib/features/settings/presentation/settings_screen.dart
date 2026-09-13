@@ -127,19 +127,44 @@ class SettingsScreen extends StatelessWidget {
               color: theme.colorScheme.surfaceContainerHighest,
               child: Column(
                 children: [
-                  SwitchListTile(
-                    secondary: const Icon(Icons.text_increase_rounded),
-                    title: const Text('Larger text'),
-                    subtitle: const Text(
-                      'Increase text throughout the app without changing your phone.',
+                  ListTile(
+                    leading: const Icon(Icons.text_increase_rounded),
+                    title: const Text('Text size'),
+                    subtitle: Text(
+                      '${(preferences.textScale * 100).round()}% — adjust text throughout the app.',
                     ),
-                    value: preferences.largerText,
-                    onChanged: (enabled) {
-                      _save(
-                        context,
-                        preferences.copyWith(largerText: enabled),
-                      );
-                    },
+                  ),
+                  Padding(
+                    padding: const EdgeInsets.fromLTRB(16, 0, 16, 8),
+                    child: Semantics(
+                      label:
+                          'Text size ${(preferences.textScale * 100).round()} percent',
+                      child: SliderTheme(
+                        data: SliderTheme.of(context).copyWith(
+                          trackHeight: 4,
+                          activeTrackColor: theme.colorScheme.primary,
+                          inactiveTrackColor: theme.colorScheme.outlineVariant,
+                          tickMarkShape: const RoundSliderTickMarkShape(
+                            tickMarkRadius: 3,
+                          ),
+                          activeTickMarkColor:
+                              Theme.of(context).colorScheme.onPrimary,
+                          inactiveTickMarkColor:
+                              Theme.of(context).colorScheme.outline,
+                        ),
+                        child: Slider(
+                          min: 1.0,
+                          max: 1.6,
+                          divisions: 6,
+                          value: preferences.textScale.clamp(1.0, 1.6),
+                          label: '${(preferences.textScale * 100).round()}%',
+                          onChanged: (value) => _save(
+                            context,
+                            preferences.copyWith(textScale: value),
+                          ),
+                        ),
+                      ),
+                    ),
                   ),
                   const Divider(height: 1, indent: 56),
                   SwitchListTile(
@@ -155,6 +180,32 @@ class SettingsScreen extends StatelessWidget {
                         preferences.copyWith(reduceMotion: enabled),
                       );
                     },
+                  ),
+                  const Divider(height: 1, indent: 56),
+                  SwitchListTile(
+                    secondary: const Icon(Icons.contrast_outlined),
+                    title: const Text('Higher contrast'),
+                    subtitle: const Text(
+                      'Make colors and boundaries easier to distinguish.',
+                    ),
+                    value: preferences.highContrast,
+                    onChanged: (enabled) => _save(
+                      context,
+                      preferences.copyWith(highContrast: enabled),
+                    ),
+                  ),
+                  const Divider(height: 1, indent: 56),
+                  SwitchListTile(
+                    secondary: const Icon(Icons.vibration_outlined),
+                    title: const Text('Haptics'),
+                    subtitle: const Text(
+                      'Use a soft vibration when a step is completed.',
+                    ),
+                    value: preferences.hapticsEnabled,
+                    onChanged: (enabled) => _save(
+                      context,
+                      preferences.copyWith(hapticsEnabled: enabled),
+                    ),
                   ),
                 ],
               ),

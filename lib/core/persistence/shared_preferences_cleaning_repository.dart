@@ -19,7 +19,7 @@ class SharedPreferencesCleaningRepository implements CleaningRepository {
 
   // Keep the original key so schema version 1 data can be migrated in place.
   static const _storageKey = 'cleaning_snapshot_v1';
-  static const _schemaVersion = 8;
+  static const _schemaVersion = 10;
 
   final SharedPreferencesAsync _preferences;
   final DateTime Function() _now;
@@ -41,6 +41,8 @@ class SharedPreferencesCleaningRepository implements CleaningRepository {
         version != 5 &&
         version != 6 &&
         version != 7 &&
+        version != 8 &&
+        version != 9 &&
         version != _schemaVersion) {
       throw const FormatException('Unsupported cleaning snapshot version.');
     }
@@ -73,8 +75,10 @@ class SharedPreferencesCleaningRepository implements CleaningRepository {
       'tasks': snapshot.tasks.map(_taskToJson).toList(),
       'preferences': {
         'theme': snapshot.preferences.theme.name,
-        'largerText': snapshot.preferences.largerText,
+        'textScale': snapshot.preferences.textScale,
         'reduceMotion': snapshot.preferences.reduceMotion,
+        'highContrast': snapshot.preferences.highContrast,
+        'hapticsEnabled': snapshot.preferences.hapticsEnabled,
         'quietHoursEnabled': snapshot.preferences.quietHoursEnabled,
         'quietStartMinute': snapshot.preferences.quietStartMinute,
         'quietEndMinute': snapshot.preferences.quietEndMinute,
@@ -92,8 +96,11 @@ class SharedPreferencesCleaningRepository implements CleaningRepository {
       theme: AppThemePreference.values.byName(
         json['theme'] as String? ?? AppThemePreference.system.name,
       ),
-      largerText: json['largerText'] as bool? ?? false,
+      textScale: (json['textScale'] as num?)?.toDouble() ??
+          ((json['largerText'] as bool? ?? false) ? 1.15 : 1.0),
       reduceMotion: json['reduceMotion'] as bool? ?? false,
+      highContrast: json['highContrast'] as bool? ?? false,
+      hapticsEnabled: json['hapticsEnabled'] as bool? ?? true,
       quietHoursEnabled: json['quietHoursEnabled'] as bool? ?? false,
       quietStartMinute: json['quietStartMinute'] as int? ?? 21 * 60,
       quietEndMinute: json['quietEndMinute'] as int? ?? 8 * 60,

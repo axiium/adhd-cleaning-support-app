@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 
 import '../../../core/domain/cleaning_values.dart';
 import '../../../core/state/cleaning_app_scope.dart';
@@ -27,6 +28,10 @@ class _TodayScreenState extends State<TodayScreen> {
     final saved = await controller.completeTask(task.id);
     if (!mounted) return;
 
+    if (saved && controller.preferences.hapticsEnabled) {
+      HapticFeedback.lightImpact();
+    }
+
     if (!saved) {
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(
@@ -52,6 +57,10 @@ class _TodayScreenState extends State<TodayScreen> {
     final wasComplete = controller.isTaskComplete(task);
     final saved = await controller.toggleTaskCompletion(task.id);
     if (!mounted) return;
+
+    if (saved && !wasComplete && controller.preferences.hapticsEnabled) {
+      HapticFeedback.lightImpact();
+    }
 
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(
