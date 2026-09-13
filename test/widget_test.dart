@@ -562,6 +562,21 @@ void main() {
 
     expect(find.text('Today'), findsWidgets);
   });
+
+  testWidgets('small-step search exposes task filters', (tester) async {
+    await _pumpSeededApp(tester);
+    await tester.tap(find.byIcon(Icons.flag_outlined));
+    await tester.pumpAndSettle();
+    await tester.tap(find.byIcon(Icons.search_rounded));
+    await tester.pumpAndSettle();
+
+    expect(find.text('Find a small step'), findsOneWidget);
+    expect(find.text('Room'), findsOneWidget);
+    expect(find.text('Energy'), findsOneWidget);
+    expect(find.text('Cadence'), findsOneWidget);
+    expect(find.text('Duration'), findsOneWidget);
+    expect(find.text('Clear one section of the counter'), findsOneWidget);
+  });
 }
 
 Future<void> _pumpSeededApp(

@@ -8,6 +8,7 @@ import '../../today/domain/cleaning_task.dart';
 import '../domain/cleaning_goal.dart';
 import '../domain/goal_schedule.dart';
 import '../domain/starter_templates.dart';
+import '../../search/presentation/task_search_screen.dart';
 
 enum _GoalAction { edit, archive, delete }
 
@@ -74,6 +75,15 @@ class GoalsScreen extends StatelessWidget {
         backgroundColor: Colors.transparent,
         title: const Text('Goals'),
         actions: [
+          IconButton(
+            tooltip: 'Find a small step',
+            onPressed: () => Navigator.of(context).push(
+              MaterialPageRoute<void>(
+                builder: (context) => const TaskSearchScreen(),
+              ),
+            ),
+            icon: const Icon(Icons.search_rounded),
+          ),
           IconButton(
             tooltip: 'Archived items',
             onPressed: () => Navigator.of(context).push(

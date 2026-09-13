@@ -169,5 +169,6 @@ The first slice proves this loop:
 17. Add starter templates organized by room. (Complete)
 18. Add first-run onboarding for rooms, energy, and starter goals. (Complete)
 19. Add accessibility settings for text, contrast, motion, haptics, and screen readers. (Complete)
-20. Add task search and filters for room, duration, energy, and cadence.
-21. Test the interaction with people who experience task paralysis.
+20. Add task search and filters for room, duration, energy, and cadence. (Complete)
+21. Add local backup and export/restore.
+22. Test the interaction with people who experience task paralysis.
