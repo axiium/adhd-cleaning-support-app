@@ -117,24 +117,6 @@ class SettingsScreen extends StatelessWidget {
     }
   }
 
-  void _showSyncInfo(BuildContext context) {
-    showDialog<void>(
-      context: context,
-      builder: (context) => AlertDialog(
-        title: const Text('Optional synchronization'),
-        content: const Text(
-          'Your data stays on this device for now. When synchronization is added, it will be opt-in, encrypted, and easy to turn off. Local backup and restore will always remain available.',
-        ),
-        actions: [
-          FilledButton(
-            onPressed: () => Navigator.pop(context),
-            child: const Text('Got it'),
-          ),
-        ],
-      ),
-    );
-  }
-
   Future<void> _chooseQuietTime(
     BuildContext context,
     AppPreferences preferences, {
@@ -215,23 +197,6 @@ class SettingsScreen extends StatelessWidget {
                       ],
                     ),
                   ],
-                ),
-              ),
-            ),
-            const SizedBox(height: 28),
-            Text('Synchronization', style: theme.textTheme.titleLarge),
-            const SizedBox(height: 12),
-            Card(
-              color: theme.colorScheme.surfaceContainerHighest,
-              child: ListTile(
-                leading: const Icon(Icons.cloud_off_outlined),
-                title: const Text('Local only right now'),
-                subtitle: const Text(
-                  'Nothing leaves this device unless you export it yourself.',
-                ),
-                trailing: TextButton(
-                  onPressed: () => _showSyncInfo(context),
-                  child: const Text('Learn more'),
                 ),
               ),
             ),

@@ -584,26 +584,6 @@ void main() {
     expect(find.text('Duration'), findsOneWidget);
     expect(find.text('Clear one section of the counter'), findsOneWidget);
   });
-
-  testWidgets('sync remains clearly local-only until connected',
-      (tester) async {
-    await _pumpSeededApp(tester);
-    await tester.tap(find.byIcon(Icons.settings_outlined));
-    await tester.pumpAndSettle();
-    await tester.scrollUntilVisible(
-      find.text('Local only right now'),
-      400,
-      scrollable: find.byType(Scrollable).first,
-    );
-
-    expect(
-        find.text('Nothing leaves this device unless you export it yourself.'),
-        findsOneWidget);
-    await tester.tap(find.text('Learn more'));
-    await tester.pumpAndSettle();
-    expect(find.text('Optional synchronization'), findsOneWidget);
-    expect(find.textContaining('opt-in, encrypted'), findsOneWidget);
-  });
 }
 
 Future<void> _pumpSeededApp(

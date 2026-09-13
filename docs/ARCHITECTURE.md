@@ -171,6 +171,5 @@ The first slice proves this loop:
 19. Add accessibility settings for text, contrast, motion, haptics, and screen readers. (Complete)
 20. Add task search and filters for room, duration, energy, and cadence. (Complete)
 21. Add local backup and export/restore. (Complete)
-22. Define the optional synchronization contract and provider boundary.
-23. Connect an encrypted synchronization provider.
-24. Test the interaction with people who experience task paralysis.
+22. Keep optional cross-platform synchronization deferred.
+23. Test the interaction with people who experience task paralysis.
