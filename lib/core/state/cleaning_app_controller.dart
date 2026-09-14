@@ -172,6 +172,40 @@ class CleaningAppController extends ChangeNotifier {
     return false;
   }
 
+  Future<bool> addGuidedSetup(
+    List<CleaningGoal> goals,
+    List<CleaningTask> tasks,
+  ) async {
+    final existingGoalIds = _goals.map((goal) => goal.id).toSet();
+    final newGoalIds = goals.map((goal) => goal.id).toSet();
+    final existingTaskIds = _tasks.map((task) => task.id).toSet();
+    if (newGoalIds.length != goals.length ||
+        goals.any((goal) => existingGoalIds.contains(goal.id)) ||
+        tasks.any(
+          (task) =>
+              existingTaskIds.contains(task.id) ||
+              !newGoalIds.contains(task.goalId),
+        )) {
+      return false;
+    }
+
+    final previousGoals = List<CleaningGoal>.of(_goals);
+    final previousTasks = List<CleaningTask>.of(_tasks);
+    _goals.addAll(goals);
+    _tasks.addAll(tasks);
+    notifyListeners();
+    if (await _persist()) return true;
+
+    _goals
+      ..clear()
+      ..addAll(previousGoals);
+    _tasks
+      ..clear()
+      ..addAll(previousTasks);
+    notifyListeners();
+    return false;
+  }
+
   CleaningGoal? goalById(String id) {
     for (final goal in _goals) {
       if (goal.id == id) return goal;

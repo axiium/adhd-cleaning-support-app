@@ -410,9 +410,9 @@ void main() {
       300,
       scrollable: find.byType(Scrollable).first,
     );
-    await tester.drag(find.byType(ListView), const Offset(0, -120));
-    await tester.pump();
     final reduceMotion = find.text('Reduce motion');
+    await tester.ensureVisible(reduceMotion);
+    await tester.pump();
     await tester.tap(reduceMotion);
     await tester.pumpAndSettle();
     expect(
@@ -562,6 +562,10 @@ void main() {
     await tester.pumpAndSettle();
 
     expect(find.text('Let’s make this easier to begin.'), findsOneWidget);
+    expect(
+      find.textContaining('creates a small, editable pool'),
+      findsOneWidget,
+    );
     await tester.drag(find.byType(ListView), const Offset(0, -600));
     await tester.pump();
     await tester.ensureVisible(find.text('Start gently'));
@@ -571,6 +575,56 @@ void main() {
     await tester.pumpAndSettle();
 
     expect(find.text('Today'), findsWidgets);
+  });
+
+  testWidgets('guided setup can add goals without replacing existing ones',
+      (tester) async {
+    await _pumpSeededApp(tester);
+    await tester.tap(find.byIcon(Icons.settings_outlined));
+    await tester.pumpAndSettle();
+    await tester.tap(find.text('Add rooms and starter goals'));
+    await tester.pumpAndSettle();
+
+    expect(find.text('Guided setup'), findsOneWidget);
+    expect(
+      find.textContaining('without replacing anything'),
+      findsOneWidget,
+    );
+    await tester.scrollUntilVisible(
+      find.textContaining('Already added'),
+      300,
+      scrollable: find.byType(Scrollable).last,
+    );
+    expect(find.textContaining('Already added'), findsOneWidget);
+
+    await tester.scrollUntilVisible(
+      find.text('Bedroom'),
+      -300,
+      scrollable: find.byType(Scrollable).last,
+    );
+    await tester.tap(find.text('Bedroom'));
+    await tester.pumpAndSettle();
+    await tester.scrollUntilVisible(
+      find.text('Make the bedroom restful'),
+      300,
+      scrollable: find.byType(Scrollable).last,
+    );
+    await tester.tap(find.text('Make the bedroom restful'));
+    await tester.pumpAndSettle();
+    await tester.ensureVisible(find.text('Add selected goals'));
+    await tester.tap(find.text('Add selected goals'));
+    await tester.pumpAndSettle();
+
+    expect(find.text('Starter goals added.'), findsOneWidget);
+    await tester.tap(find.byIcon(Icons.flag_outlined));
+    await tester.pumpAndSettle();
+    expect(find.text('Keep the kitchen usable'), findsOneWidget);
+    await tester.scrollUntilVisible(
+      find.text('Make the bedroom restful'),
+      300,
+      scrollable: find.byType(Scrollable).last,
+    );
+    expect(find.text('Make the bedroom restful'), findsOneWidget);
   });
 
   testWidgets('small-step search exposes task filters', (tester) async {

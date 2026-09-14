@@ -8,7 +8,9 @@ import '../../goals/domain/starter_templates.dart';
 import '../../today/domain/cleaning_task.dart';
 
 class OnboardingScreen extends StatefulWidget {
-  const OnboardingScreen({super.key});
+  const OnboardingScreen({this.addToExisting = false, super.key});
+
+  final bool addToExisting;
 
   @override
   State<OnboardingScreen> createState() => _OnboardingScreenState();
@@ -19,7 +21,18 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
   EnergyLevel _energy = EnergyLevel.low;
   final _selectedTemplates = <String>{starterTemplates.first.title};
 
+  bool _alreadyAdded(StarterTemplate template) {
+    if (!widget.addToExisting) return false;
+    return CleaningAppScope.of(context).allGoals.any(
+          (goal) => goal.title == template.title && goal.room == template.room,
+        );
+  }
+
   Future<void> _finish({bool skip = false}) async {
+    if (widget.addToExisting && skip) {
+      Navigator.of(context).pop(false);
+      return;
+    }
     final controller = CleaningAppScope.of(context);
     final suffix = DateTime.now().microsecondsSinceEpoch.toString();
     final chosen = skip
@@ -27,7 +40,8 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
         : starterTemplates
             .where((template) =>
                 _selectedRooms.contains(template.room) &&
-                _selectedTemplates.contains(template.title))
+                _selectedTemplates.contains(template.title) &&
+                (!widget.addToExisting || !_alreadyAdded(template)))
             .toList();
     final goals = <CleaningGoal>[];
     final tasks = <CleaningTask>[];
@@ -57,8 +71,22 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
         );
       }
     }
-    if (await controller.finishOnboarding(goals, tasks) && mounted) {
-      setState(() {});
+    final saved = widget.addToExisting
+        ? await controller.addGuidedSetup(goals, tasks)
+        : await controller.finishOnboarding(goals, tasks);
+    if (!mounted) return;
+    if (saved) {
+      if (widget.addToExisting) {
+        Navigator.of(context).pop(true);
+      } else {
+        setState(() {});
+      }
+    } else {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('That setup could not be saved. Please try again.'),
+        ),
+      );
     }
   }
 
@@ -67,6 +95,9 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
     final theme = Theme.of(context);
     final rooms = starterTemplates.map((template) => template.room).toSet();
     return Scaffold(
+      appBar: widget.addToExisting
+          ? AppBar(title: const Text('Guided setup'))
+          : null,
       body: SafeArea(
         child: ListView(
           padding: const EdgeInsets.fromLTRB(24, 48, 24, 32),
@@ -74,11 +105,27 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
             Icon(Icons.spa_outlined,
                 size: 48, color: theme.colorScheme.primary),
             const SizedBox(height: 20),
-            Text('Let’s make this easier to begin.',
+            Text(
+                widget.addToExisting
+                    ? 'Add another gentle starting point.'
+                    : 'Let’s make this easier to begin.',
                 style: theme.textTheme.headlineMedium),
             const SizedBox(height: 12),
-            const Text(
-                'Choose a room and one gentle starting point. You can change everything later—there is no perfect setup.'),
+            Text(
+              widget.addToExisting
+                  ? 'Choose more rooms and starter goals. This adds to your current setup without replacing anything.'
+                  : 'This setup creates a small, editable pool of goals and steps so the app can offer one manageable place to begin.',
+            ),
+            const SizedBox(height: 12),
+            Card(
+              color: theme.colorScheme.surfaceContainerHighest,
+              child: const Padding(
+                padding: EdgeInsets.all(16),
+                child: Text(
+                  'Choose only what feels useful. Everything can be edited or removed later, and reminders stay off unless you turn them on.',
+                ),
+              ),
+            ),
             const SizedBox(height: 28),
             Text('Which rooms matter today?',
                 style: theme.textTheme.titleMedium),
@@ -143,22 +190,38 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
                 contentPadding: EdgeInsets.zero,
                 title: Text(template.title),
                 subtitle: Text(
-                    '${template.room} · ${template.energyLevel.label} · ${template.steps.length} small steps'),
-                value: _selectedTemplates.contains(template.title),
-                onChanged: (selected) => setState(() {
-                  selected == true
-                      ? _selectedTemplates.add(template.title)
-                      : _selectedTemplates.remove(template.title);
-                }),
+                  _alreadyAdded(template)
+                      ? '${template.room} · Already added'
+                      : '${template.room} · ${template.energyLevel.label} · ${template.steps.length} small steps',
+                ),
+                value: !_alreadyAdded(template) &&
+                    _selectedTemplates.contains(template.title),
+                onChanged: _alreadyAdded(template)
+                    ? null
+                    : (selected) => setState(() {
+                          selected == true
+                              ? _selectedTemplates.add(template.title)
+                              : _selectedTemplates.remove(template.title);
+                        }),
               ),
             const SizedBox(height: 24),
             FilledButton(
-              onPressed: _selectedTemplates.isEmpty ? null : _finish,
-              child: const Text('Start gently'),
+              onPressed: starterTemplates.any(
+                (template) =>
+                    _selectedTemplates.contains(template.title) &&
+                    !_alreadyAdded(template),
+              )
+                  ? _finish
+                  : null,
+              child: Text(
+                widget.addToExisting ? 'Add selected goals' : 'Start gently',
+              ),
             ),
             TextButton(
               onPressed: () => _finish(skip: true),
-              child: const Text('Skip setup for now'),
+              child: Text(
+                widget.addToExisting ? 'Not now' : 'Skip setup for now',
+              ),
             ),
           ],
         ),

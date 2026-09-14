@@ -15,22 +15,27 @@ or difficult, not to measure productivity or consistency.
 Please use the app for 15–20 minutes and talk through what you expect to happen.
 You do not need to finish every activity.
 
-1. Create or choose a starter goal for a room that matters to you.
-2. Add a repeating small step and a one-time step, such as “Hang a shelf” or
+1. Read the opening setup explanation. Note whether it clearly explains what
+   will be created and that reminders remain off by default.
+2. Create or choose a starter goal for a room that matters to you.
+3. Add a repeating small step and a one-time step, such as “Hang a shelf” or
    “Get a spare key made.”
-3. Open Today and confirm that the one-time step is available even if its
+4. Open Today and confirm that the one-time step is available even if its
    goal is not scheduled for today.
-4. Complete the one-time step. Confirm that the Undo message disappears after
+5. Complete the one-time step. Confirm that the Undo message disappears after
    a few seconds, then mark the step as not done to check the recovery flow.
-5. Complete it again, close and reopen the app, and confirm that it remains
+6. Complete it again, close and reopen the app, and confirm that it remains
    completed rather than resetting with the goal schedule.
-6. Try the energy-based rescue mode and check whether the one-time step can be
+7. Try the energy-based rescue mode and check whether the one-time step can be
    suggested when it matches your selected energy.
-7. Skip a step for now and notice how the message feels.
-8. Archive a goal, confirm that it leaves the active goal list, then open
+8. Skip a step for now and notice how the message feels.
+9. Archive a goal, confirm that it leaves the active goal list, then open
    Archived items and restore it.
-9. Open History and select a day on the monthly calendar.
-10. Open Settings and try the text-size slider and backup export.
+10. Open History and select a day on the monthly calendar.
+11. Open Settings, choose **Add rooms and starter goals**, and add another
+    starter. Confirm that existing goals remain and previously added starters
+    are clearly identified.
+12. In Settings, try the text-size slider and backup export.
 
 ## Feedback questions
 
@@ -41,6 +46,9 @@ You do not need to finish every activity.
 - Was adding a one-time step at least as easy as adding an item to a checklist?
 - After completing a one-time step, was it clear how to correct a mistake?
 - Did archiving and restoring a goal behave as you expected?
+- Did the guided setup explain its purpose before asking you to make choices?
+- Was it easy to find and rerun setup without worrying about losing data?
+- Were already-added starter goals clearly distinguished from available ones?
 - Which controls felt useful when your energy was low?
 - Were any screens too busy, too small, or difficult to navigate?
 - What would make you comfortable opening the app again tomorrow?

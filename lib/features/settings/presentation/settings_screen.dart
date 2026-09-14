@@ -5,6 +5,7 @@ import 'package:file_picker/file_picker.dart';
 import 'package:flutter/material.dart';
 
 import '../../../core/state/cleaning_app_scope.dart';
+import '../../onboarding/presentation/onboarding_screen.dart';
 import '../domain/app_preferences.dart';
 
 class SettingsScreen extends StatelessWidget {
@@ -23,6 +24,19 @@ class SettingsScreen extends StatelessWidget {
           content:
               Text('That preference could not be saved. Please try again.'),
         ),
+      );
+    }
+  }
+
+  Future<void> _openGuidedSetup(BuildContext context) async {
+    final added = await Navigator.of(context).push<bool>(
+      MaterialPageRoute<bool>(
+        builder: (context) => const OnboardingScreen(addToExisting: true),
+      ),
+    );
+    if (added == true && context.mounted) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Starter goals added.')),
       );
     }
   }
@@ -164,6 +178,21 @@ class SettingsScreen extends StatelessWidget {
             Text(
               'These choices stay on this device and can be changed anytime.',
               style: theme.textTheme.bodyLarge,
+            ),
+            const SizedBox(height: 28),
+            Text('Guided setup', style: theme.textTheme.titleLarge),
+            const SizedBox(height: 12),
+            Card(
+              color: theme.colorScheme.surfaceContainerHighest,
+              child: ListTile(
+                leading: const Icon(Icons.playlist_add_rounded),
+                title: const Text('Add rooms and starter goals'),
+                subtitle: const Text(
+                  'Run the gentle setup again without replacing your current goals.',
+                ),
+                trailing: const Icon(Icons.chevron_right_rounded),
+                onTap: () => _openGuidedSetup(context),
+              ),
             ),
             const SizedBox(height: 28),
             Text('Backup', style: theme.textTheme.titleLarge),

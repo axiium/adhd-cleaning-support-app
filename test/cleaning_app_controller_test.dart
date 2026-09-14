@@ -401,6 +401,44 @@ void main() {
     controller.dispose();
   });
 
+  test('guided setup adds goals without replacing existing data', () async {
+    final repository = MemoryCleaningRepository.seeded();
+    final controller = CleaningAppController(repository: repository);
+    await controller.initialize();
+
+    expect(
+      await controller.addGuidedSetup(
+        const [
+          CleaningGoal(
+            id: 'guided-bedroom',
+            title: 'Make the bedroom restful',
+            room: 'Bedroom',
+            cadence: GoalCadence.weekly,
+            energyLevel: EnergyLevel.low,
+          ),
+        ],
+        const [
+          CleaningTask(
+            id: 'guided-bedroom-surface',
+            title: 'Clear one small surface',
+            goalId: 'guided-bedroom',
+            estimatedMinutes: 5,
+            energyLevel: EnergyLevel.low,
+          ),
+        ],
+      ),
+      isTrue,
+    );
+
+    final restored = CleaningAppController(repository: repository);
+    await restored.initialize();
+    expect(restored.goalById('kitchen-usable'), isNotNull);
+    expect(restored.goalById('guided-bedroom'), isNotNull);
+    expect(restored.tasksForGoal('guided-bedroom'), hasLength(1));
+    controller.dispose();
+    restored.dispose();
+  });
+
   test('reminder limit prevents another goal from enabling notifications',
       () async {
     final scheduler = MemoryReminderScheduler();

@@ -16,7 +16,7 @@ Completed product slices include:
 - Today view with progress, skip-for-now, timers, and energy-based rescue mode
 - Optional gentle reminders with quiet hours, snooze, frequency limits, and persistence after repeated skips
 - Completion history with filters, details, and a monthly calendar
-- Room-based starter templates and first-run onboarding
+- Room-based starter templates and guided onboarding that can be revisited without replacing existing goals
 - Accessibility preferences for text size, contrast, reduced motion, haptics, and screen-reader-friendly labels
 - Task search and filters for room, energy, cadence, and duration
 - Local JSON backup export and restore through the system file picker
@@ -103,6 +103,11 @@ their goal's cadence. One-time steps remain available regardless of the goal's
 preferred schedule and stay completed until the user explicitly marks them as
 not done. Their type is retained in local storage and exported backups.
 
+First-run setup explains that it creates a small, editable task pool and that
+reminders remain off by default. The same guided setup can be opened later from
+Settings to add rooms and starter goals without replacing existing data or
+duplicating starter goals that are already present.
+
 Weekly goals can use a preferred weekday, monthly goals a reliable date from
 1–28, and yearly goals a month and day. A scheduled goal appears on that date
 and remains available for the rest of its recurrence period, so missing one day
@@ -156,17 +161,17 @@ The APK is generated at
 ### Verification status
 
 The current project passes Flutter analysis and the complete automated test
-suite: 54 tests currently pass. The Android debug APK builds successfully on
+suite: 56 tests currently pass. The Android debug APK builds successfully on
 the development machine.
 
 ## 0. Remaining work
 
-The next product work is improving onboarding: briefly explain what setup will
-do and let users revisit it later to add rooms, workflows, and starter goals.
-Continued early user testing should guide wording, task sizing, reminder
-behavior, and onboarding before release preparation begins. Cloud
-synchronization remains deferred until there is a clear privacy, security, and
-provider decision.
+The next product work is making starter templates visually explicit instead of
+relying on an icon that can be mistaken for AI, and expanding supported task
+durations while continuing to encourage smaller steps. Continued early user
+testing should guide wording, task sizing, reminder behavior, and onboarding
+before release preparation begins. Cloud synchronization remains deferred
+until there is a clear privacy, security, and provider decision.
 
 ## 1. Product idea
 
@@ -306,8 +311,8 @@ Define the smallest clickable prototype around one loop:
 
 > Create a goal → receive one small task → start or skip it → mark it complete → see gentle progress.
 
-The next product slice is improving first-run onboarding and making the guided
-setup available again from within the app.
+The next product slice is clarifying access to starter templates and expanding
+the available task-duration choices.
 
 ---
 
