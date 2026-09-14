@@ -83,7 +83,8 @@ void main() {
     await _pumpSeededApp(tester);
     await tester.tap(find.byIcon(Icons.flag_outlined));
     await tester.pumpAndSettle();
-    await tester.tap(find.byIcon(Icons.auto_awesome_outlined));
+    expect(find.text('Starter templates'), findsOneWidget);
+    await tester.tap(find.text('Starter templates'));
     await tester.pumpAndSettle();
 
     expect(find.text('Starter templates'), findsOneWidget);
@@ -110,6 +111,13 @@ void main() {
     );
     await tester.tap(find.text('One-time'));
     await tester.pumpAndSettle();
+    await tester.tap(find.text('5 minutes'));
+    await tester.pumpAndSettle();
+    expect(find.text('60 minutes'), findsOneWidget);
+    await tester.tap(find.text('60 minutes'));
+    await tester.pumpAndSettle();
+    await tester.ensureVisible(find.text('Add to Today'));
+    await tester.pump();
     await tester.tap(find.text('Add to Today'));
     await tester.pumpAndSettle();
 
@@ -120,6 +128,7 @@ void main() {
     );
     expect(find.text('Put three things away'), findsOneWidget);
     expect(find.textContaining('One-time'), findsWidgets);
+    expect(find.textContaining('60 min'), findsWidgets);
 
     await tester.pageBack();
     await tester.pumpAndSettle();
@@ -339,6 +348,8 @@ void main() {
       find.widgetWithText(TextFormField, 'Small action'),
       'Clear half of the counter',
     );
+    await tester.ensureVisible(find.text('Save changes'));
+    await tester.pump();
     await tester.tap(find.text('Save changes'));
     await tester.pumpAndSettle();
 

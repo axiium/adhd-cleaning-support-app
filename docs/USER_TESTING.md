@@ -17,25 +17,29 @@ You do not need to finish every activity.
 
 1. Read the opening setup explanation. Note whether it clearly explains what
    will be created and that reminders remain off by default.
-2. Create or choose a starter goal for a room that matters to you.
-3. Add a repeating small step and a one-time step, such as “Hang a shelf” or
+2. Open Goals and find **Starter templates**. Note whether the labeled button
+   is clear and whether anything about it still suggests an AI feature.
+3. Create or choose a starter goal for a room that matters to you.
+4. Add a repeating small step and a one-time step, such as “Hang a shelf” or
    “Get a spare key made.”
-4. Open Today and confirm that the one-time step is available even if its
+5. Check the estimated-time choices. Confirm that short options remain easy to
+   choose and that 30- and 60-minute options are available.
+6. Open Today and confirm that the one-time step is available even if its
    goal is not scheduled for today.
-5. Complete the one-time step. Confirm that the Undo message disappears after
+7. Complete the one-time step. Confirm that the Undo message disappears after
    a few seconds, then mark the step as not done to check the recovery flow.
-6. Complete it again, close and reopen the app, and confirm that it remains
+8. Complete it again, close and reopen the app, and confirm that it remains
    completed rather than resetting with the goal schedule.
-7. Try the energy-based rescue mode and check whether the one-time step can be
+9. Try the energy-based rescue mode and check whether the one-time step can be
    suggested when it matches your selected energy.
-8. Skip a step for now and notice how the message feels.
-9. Archive a goal, confirm that it leaves the active goal list, then open
+10. Skip a step for now and notice how the message feels.
+11. Archive a goal, confirm that it leaves the active goal list, then open
    Archived items and restore it.
-10. Open History and select a day on the monthly calendar.
-11. Open Settings, choose **Add rooms and starter goals**, and add another
+12. Open History and select a day on the monthly calendar.
+13. Open Settings, choose **Add rooms and starter goals**, and add another
     starter. Confirm that existing goals remain and previously added starters
     are clearly identified.
-12. In Settings, try the text-size slider and backup export.
+14. In Settings, try the text-size slider and backup export.
 
 ## Feedback questions
 
@@ -49,6 +53,8 @@ You do not need to finish every activity.
 - Did the guided setup explain its purpose before asking you to make choices?
 - Was it easy to find and rerun setup without worrying about losing data?
 - Were already-added starter goals clearly distinguished from available ones?
+- Was the Starter Templates entry clearly a collection of predefined options?
+- Did the longer time choices feel useful without discouraging smaller steps?
 - Which controls felt useful when your energy was low?
 - Were any screens too busy, too small, or difficult to navigate?
 - What would make you comfortable opening the app again tomorrow?

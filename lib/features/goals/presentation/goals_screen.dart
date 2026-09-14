@@ -158,14 +158,20 @@ class GoalsScreen extends StatelessWidget {
                       },
                     ),
             ),
-            IconButton(
-              tooltip: 'Starter templates',
-              onPressed: () => Navigator.of(context).push(
-                MaterialPageRoute<void>(
-                  builder: (context) => const StarterTemplatesScreen(),
+            Padding(
+              padding: const EdgeInsets.fromLTRB(20, 8, 20, 16),
+              child: SizedBox(
+                width: double.infinity,
+                child: OutlinedButton.icon(
+                  onPressed: () => Navigator.of(context).push(
+                    MaterialPageRoute<void>(
+                      builder: (context) => const StarterTemplatesScreen(),
+                    ),
+                  ),
+                  icon: const Icon(Icons.library_add_outlined),
+                  label: const Text('Starter templates'),
                 ),
               ),
-              icon: const Icon(Icons.auto_awesome_outlined),
             ),
           ],
         ),
@@ -1632,15 +1638,24 @@ class _CreateStepSheetState extends State<_CreateStepSheet> {
                 ),
                 items: const [
                   DropdownMenuItem(value: 2, child: Text('2 minutes')),
+                  DropdownMenuItem(value: 3, child: Text('3 minutes')),
                   DropdownMenuItem(value: 5, child: Text('5 minutes')),
                   DropdownMenuItem(value: 10, child: Text('10 minutes')),
                   DropdownMenuItem(value: 15, child: Text('15 minutes')),
+                  DropdownMenuItem(value: 20, child: Text('20 minutes')),
+                  DropdownMenuItem(value: 30, child: Text('30 minutes')),
+                  DropdownMenuItem(value: 45, child: Text('45 minutes')),
+                  DropdownMenuItem(value: 60, child: Text('60 minutes')),
                 ],
                 onChanged: (value) {
                   if (value != null) {
                     setState(() => _estimatedMinutes = value);
                   }
                 },
+              ),
+              const SizedBox(height: 8),
+              const Text(
+                'Choose the shortest honest estimate. Longer options are here for work that cannot be usefully split up.',
               ),
               const SizedBox(height: 16),
               DropdownButtonFormField<EnergyLevel>(

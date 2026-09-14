@@ -13,6 +13,7 @@ Completed product slices include:
 
 - Daily, weekly, monthly, and yearly cleaning goals with custom schedules
 - Repeating and one-time small steps with editing, archiving, reordering, deletion confirmation, and undo
+- Clearly labeled starter templates and task estimates from 2 to 60 minutes
 - Today view with progress, skip-for-now, timers, and energy-based rescue mode
 - Optional gentle reminders with quiet hours, snooze, frequency limits, and persistence after repeated skips
 - Completion history with filters, details, and a monthly calendar
@@ -108,6 +109,10 @@ reminders remain off by default. The same guided setup can be opened later from
 Settings to add rooms and starter goals without replacing existing data or
 duplicating starter goals that are already present.
 
+Starter templates are available through a labeled button on Goals rather than
+an ambiguous sparkle icon. Small-step estimates include short choices first and
+extend through 60 minutes for work that cannot be usefully divided further.
+
 Weekly goals can use a preferred weekday, monthly goals a reliable date from
 1–28, and yearly goals a month and day. A scheduled goal appears on that date
 and remains available for the rest of its recurrence period, so missing one day
@@ -166,12 +171,11 @@ the development machine.
 
 ## 0. Remaining work
 
-The next product work is making starter templates visually explicit instead of
-relying on an icon that can be mistaken for AI, and expanding supported task
-durations while continuing to encourage smaller steps. Continued early user
-testing should guide wording, task sizing, reminder behavior, and onboarding
-before release preparation begins. Cloud synchronization remains deferred
-until there is a clear privacy, security, and provider decision.
+The next product work is a time-boxed “Power Hour” mode that creates a
+manageable group of tasks for the time a user has available. Continued early
+user testing should guide wording, task sizing, reminder behavior, and
+onboarding before release preparation begins. Cloud synchronization remains
+deferred until there is a clear privacy, security, and provider decision.
 
 ## 1. Product idea
 
@@ -222,7 +226,7 @@ The first usable version should let a user:
 3. View a short “Today” list.
 4. Get one recommended next task through a “Do one thing” action.
 5. Mark a task complete, skip it, or defer it without losing progress.
-6. Start an optional 2-, 5-, or 10-minute timer.
+6. Start an optional timer based on a task estimate from 2 to 60 minutes.
 7. See simple progress for the current day and goal period.
 
 The MVP should not initially depend on accounts, social features, complex gamification, or automatic judgment of cleanliness.
@@ -311,8 +315,8 @@ Define the smallest clickable prototype around one loop:
 
 > Create a goal → receive one small task → start or skip it → mark it complete → see gentle progress.
 
-The next product slice is clarifying access to starter templates and expanding
-the available task-duration choices.
+The next product slice is a time-boxed “Power Hour” mode that builds a gentle
+task list inside the user's available time.
 
 ---
 
