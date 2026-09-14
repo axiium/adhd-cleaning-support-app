@@ -12,7 +12,7 @@ as medical advice or as a replacement for professional care.
 Completed product slices include:
 
 - Daily, weekly, monthly, and yearly cleaning goals with custom schedules
-- Repeating and one-time small steps with editing, archiving, reordering, deletion confirmation, and undo
+- Repeating and one-time small steps with editing, archiving, reordering, deletion confirmation, undo, and a post-completion **Done for good** action
 - Clearly labeled starter templates and task estimates from 2 to 60 minutes
 - Today view with progress, skip-for-now, timers, and energy-based rescue mode
 - Power Hour planning for 15- to 120-minute windows with an energy ceiling and breathing room
@@ -101,6 +101,11 @@ with an explicit warning. Archiving keeps completion history intact and keeps
 the item out of Today; archiving a goal also pauses its reminder until the goal
 is restored.
 
+After completing any small step, the confirmation message offers both **Undo**
+for an accidental tap and **Done for good** for work that should leave the
+active task pool. Done for good archives the step without removing its history,
+and the following message offers an immediate Restore action.
+
 Small steps can be marked as repeating or one-time. Repeating steps reset with
 their goal's cadence. One-time steps remain available regardless of the goal's
 preferred schedule and stay completed until the user explicitly marks them as
@@ -112,8 +117,10 @@ Settings to add rooms and starter goals without replacing existing data or
 duplicating starter goals that are already present.
 
 Starter templates are available through a labeled button on Goals rather than
-an ambiguous sparkle icon. Small-step estimates include short choices first and
-extend through 60 minutes for work that cannot be usefully divided further.
+an ambiguous sparkle icon. The template and Add goal actions use separate,
+full-width rows so they remain distinct on small screens and with larger text.
+Small-step estimates include short choices first and extend through 60 minutes
+for work that cannot be usefully divided further.
 
 Weekly goals can use a preferred weekday, monthly goals a reliable date from
 1–28, and yearly goals a month and day. A scheduled goal appears on that date
@@ -180,15 +187,15 @@ The APK is generated at
 ### Verification status
 
 The current project passes Flutter analysis and the complete automated test
-suite: 63 tests currently pass. The Android debug APK builds successfully on
+suite: 65 tests currently pass. The Android debug APK builds successfully on
 the development machine.
 
 ## 0. Remaining work
 
-The next product work is an optional completion action for archiving a step
-that is truly finished, especially one-time work, without removing its history.
-Continued early user testing should guide wording, task sizing, reminder
-behavior, and onboarding before release preparation begins. Cloud
+The next product work is guided user testing of the new one-time, Power Hour,
+deadline, and post-completion archive flows, followed by fixes and wording
+refinements from that feedback. Continued testing should also guide task sizing,
+reminder behavior, and onboarding before release preparation begins. Cloud
 synchronization remains deferred until there is a clear privacy, security, and
 provider decision.
 
@@ -330,8 +337,8 @@ Define the smallest clickable prototype around one loop:
 
 > Create a goal → receive one small task → start or skip it → mark it complete → see gentle progress.
 
-The next product slice is a post-completion archive action for work that is
-finished for good.
+The next product slice will be selected from fresh user-testing feedback, with
+release-readiness work following once the core flow is comfortable to use.
 
 ---
 

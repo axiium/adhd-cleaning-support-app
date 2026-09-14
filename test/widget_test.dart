@@ -47,6 +47,30 @@ void main() {
     expect(find.text('Clear one section of the counter'), findsWidgets);
   });
 
+  testWidgets('a completed step can be archived as done for good and restored',
+      (tester) async {
+    await _pumpSeededApp(tester);
+
+    await tester.ensureVisible(find.text('I did it'));
+    await tester.pump();
+    await tester.tap(find.text('I did it'));
+    await tester.pumpAndSettle();
+
+    expect(find.text('Done for good'), findsOneWidget);
+    await tester.tap(find.text('Done for good'));
+    await tester.pumpAndSettle();
+
+    expect(
+      find.text('Step archived. Its history is still safe.'),
+      findsOneWidget,
+    );
+    expect(find.text('Clear one section of the counter'), findsNothing);
+
+    await tester.tap(find.text('Restore'));
+    await tester.pumpAndSettle();
+    expect(find.text('Clear one section of the counter'), findsWidgets);
+  });
+
   testWidgets('a user can create a cleaning goal', (tester) async {
     await _pumpSeededApp(tester);
 
@@ -95,6 +119,39 @@ void main() {
     await tester.pumpAndSettle();
 
     expect(find.textContaining('added with 3 small steps'), findsOneWidget);
+  });
+
+  testWidgets('goal actions do not overlap on a small screen', (tester) async {
+    await tester.binding.setSurfaceSize(const Size(320, 640));
+    addTearDown(() => tester.binding.setSurfaceSize(null));
+    tester.platformDispatcher.textScaleFactorTestValue = 1.5;
+    addTearDown(
+      tester.platformDispatcher.clearTextScaleFactorTestValue,
+    );
+    await _pumpSeededApp(tester);
+
+    await tester.tap(find.byIcon(Icons.flag_outlined));
+    await tester.pumpAndSettle();
+
+    await tester.scrollUntilVisible(
+      find.text('Starter templates'),
+      150,
+      scrollable: find.byType(Scrollable).last,
+    );
+
+    final templates = find.widgetWithText(
+      OutlinedButton,
+      'Starter templates',
+    );
+    final addGoal = find.widgetWithText(FilledButton, 'Add goal');
+    expect(templates, findsOneWidget);
+    expect(addGoal, findsOneWidget);
+    expect(
+        tester.getRect(templates).overlaps(tester.getRect(addGoal)), isFalse);
+    expect(
+      tester.getRect(templates).bottom,
+      lessThan(tester.getRect(addGoal).top),
+    );
   });
 
   testWidgets('a new small step appears on Today', (tester) async {
@@ -297,6 +354,10 @@ void main() {
     await tester.pump();
     await tester.tap(find.text('I did it'));
     await tester.pumpAndSettle();
+    tester
+        .state<ScaffoldMessengerState>(find.byType(ScaffoldMessenger))
+        .hideCurrentSnackBar();
+    await tester.pumpAndSettle();
     await tester.tap(find.byIcon(Icons.history_outlined));
     await tester.pumpAndSettle();
 
@@ -473,6 +534,11 @@ void main() {
 
     await tester.tap(find.byIcon(Icons.flag_outlined));
     await tester.pumpAndSettle();
+    await tester.scrollUntilVisible(
+      find.text('Weekly bathroom reset'),
+      200,
+      scrollable: find.byType(Scrollable).last,
+    );
     await tester.tap(find.text('Weekly bathroom reset'));
     await tester.pumpAndSettle();
     await tester.tap(find.byTooltip('Goal options'));

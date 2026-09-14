@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 
 import '../../../core/domain/cleaning_values.dart';
+import '../../../core/presentation/task_completion_feedback.dart';
 import '../../../core/state/cleaning_app_scope.dart';
 import '../../timer/presentation/focus_timer_screen.dart';
 import '../../today/domain/cleaning_task.dart';
@@ -43,15 +44,20 @@ class _PowerHourScreenState extends State<PowerHourScreen> {
     if (saved && !wasComplete && controller.preferences.hapticsEnabled) {
       HapticFeedback.lightImpact();
     }
+    if (saved && !wasComplete) {
+      showTaskCompletionFeedback(
+        context: context,
+        task: task,
+        controller: controller,
+      );
+      return;
+    }
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(
-        duration: const Duration(seconds: 4),
         content: Text(
-          !saved
-              ? 'That change could not be saved. Please try again.'
-              : wasComplete
-                  ? 'Marked as not done.'
-                  : 'Small step completed.',
+          saved
+              ? 'Marked as not done.'
+              : 'That change could not be saved. Please try again.',
         ),
       ),
     );
@@ -88,7 +94,14 @@ class _PowerHourScreenState extends State<PowerHourScreen> {
         ),
       ),
     );
-    if (saved == false && mounted) {
+    if (!mounted) return;
+    if (saved == true) {
+      showTaskCompletionFeedback(
+        context: context,
+        task: task,
+        controller: CleaningAppScope.of(context),
+      );
+    } else if (saved == false) {
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(
           content: Text('Completed for now, but it could not be saved.'),
@@ -104,6 +117,7 @@ class _PowerHourScreenState extends State<PowerHourScreen> {
     final plannedTasks = _plannedTaskIds
         .map((id) => tasksById[id])
         .whereType<CleaningTask>()
+        .where((task) => !task.isArchived)
         .toList();
     final plannedMinutes = plannedTasks.fold<int>(
       0,

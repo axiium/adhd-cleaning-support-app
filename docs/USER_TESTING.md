@@ -18,7 +18,8 @@ You do not need to finish every activity.
 1. Read the opening setup explanation. Note whether it clearly explains what
    will be created and that reminders remain off by default.
 2. Open Goals and find **Starter templates**. Note whether the labeled button
-   is clear and whether anything about it still suggests an AI feature.
+   is clear, does not overlap **Add goal**, and whether anything about it still
+   suggests an AI feature. Check again after increasing the app's text size.
 3. Create or choose a starter goal for a room that matters to you.
 4. Add a repeating small step and a one-time step, such as “Hang a shelf” or
    “Get a spare key made.”
@@ -26,10 +27,12 @@ You do not need to finish every activity.
    choose and that 30- and 60-minute options are available.
 6. Open Today and confirm that the one-time step is available even if its
    goal is not scheduled for today.
-7. Complete the one-time step. Confirm that the Undo message disappears after
-   a few seconds, then mark the step as not done to check the recovery flow.
-8. Complete it again, close and reopen the app, and confirm that it remains
-   completed rather than resetting with the goal schedule.
+7. Complete the one-time step. Confirm that the message offers **Undo** and
+   **Done for good**, then use Undo to check recovery from an accidental tap.
+8. Complete it again and choose **Done for good**. Confirm that the step leaves
+   the active list, its history remains safe, and the immediate Restore action
+   brings it back. Complete it once more, close and reopen the app, and confirm
+   that it remains completed rather than resetting with the goal schedule.
 9. Try the energy-based rescue mode and check whether the one-time step can be
    suggested when it matches your selected energy.
 10. Open **Power Hour**, choose how much time and energy you have, and build a
@@ -58,6 +61,8 @@ You do not need to finish every activity.
 - Was the difference between repeating and one-time steps immediately clear?
 - Was adding a one-time step at least as easy as adding an item to a checklist?
 - After completing a one-time step, was it clear how to correct a mistake?
+- Did **Done for good** clearly communicate that it archives rather than deletes?
+- Was the post-completion message comfortable to use at your text-size setting?
 - Did archiving and restoring a goal behave as you expected?
 - Did the guided setup explain its purpose before asking you to make choices?
 - Was it easy to find and rerun setup without worrying about losing data?

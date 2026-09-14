@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 
 import '../../../core/domain/cleaning_values.dart';
+import '../../../core/presentation/task_completion_feedback.dart';
 import '../../../core/state/cleaning_app_controller.dart';
 import '../../../core/state/cleaning_app_scope.dart';
 import '../../reminders/domain/goal_reminder.dart';
@@ -97,84 +98,95 @@ class GoalsScreen extends StatelessWidget {
           ),
         ],
       ),
-      floatingActionButton: FloatingActionButton.extended(
-        onPressed: () => _openCreateGoal(context),
-        icon: const Icon(Icons.add_rounded),
-        label: const Text('Add goal'),
-      ),
       body: SafeArea(
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Padding(
-              padding: const EdgeInsets.fromLTRB(20, 8, 20, 20),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(
-                    'Choose what "good enough" looks like.',
-                    style: theme.textTheme.headlineSmall,
-                  ),
-                  const SizedBox(height: 8),
-                  Text(
-                    'Goals give direction. Small steps will do the work.',
-                    style: theme.textTheme.bodyLarge,
-                  ),
-                  const SizedBox(height: 8),
-                  Text(
-                    'Use the handles to put the most helpful goals first.',
-                    style: theme.textTheme.bodySmall,
-                  ),
-                ],
-              ),
-            ),
-            Expanded(
-              child: goals.isEmpty
-                  ? const Center(child: Text('No active goals right now.'))
-                  : ReorderableListView.builder(
-                      padding: const EdgeInsets.fromLTRB(20, 4, 20, 104),
-                      buildDefaultDragHandles: false,
-                      itemCount: goals.length,
-                      onReorderItem: (oldIndex, newIndex) =>
-                          _reorderGoals(context, oldIndex, newIndex),
-                      itemBuilder: (context, index) {
-                        final goal = goals[index];
-                        return Padding(
-                          key: ValueKey(goal.id),
-                          padding: const EdgeInsets.only(bottom: 12),
-                          child: _GoalCard(
-                            goal: goal,
-                            tasks: controller.tasksForGoal(goal.id),
-                            isComplete: controller.isTaskComplete,
-                            onTap: () => _openGoal(context, goal),
-                            dragHandle: ReorderableDragStartListener(
-                              index: index,
-                              child: const IconButton(
-                                tooltip: 'Reorder goal',
-                                onPressed: null,
-                                icon: Icon(Icons.drag_handle_rounded),
-                              ),
-                            ),
-                          ),
-                        );
-                      },
+        child: CustomScrollView(
+          slivers: [
+            SliverToBoxAdapter(
+              child: Padding(
+                padding: const EdgeInsets.fromLTRB(20, 8, 20, 20),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      'Choose what "good enough" looks like.',
+                      style: theme.textTheme.headlineSmall,
                     ),
-            ),
-            Padding(
-              padding: const EdgeInsets.fromLTRB(20, 8, 20, 16),
-              child: SizedBox(
-                width: double.infinity,
-                child: OutlinedButton.icon(
-                  onPressed: () => Navigator.of(context).push(
-                    MaterialPageRoute<void>(
-                      builder: (context) => const StarterTemplatesScreen(),
+                    const SizedBox(height: 8),
+                    Text(
+                      'Goals give direction. Small steps will do the work.',
+                      style: theme.textTheme.bodyLarge,
                     ),
-                  ),
-                  icon: const Icon(Icons.library_add_outlined),
-                  label: const Text('Starter templates'),
+                    const SizedBox(height: 8),
+                    Text(
+                      'Use the handles to put the most helpful goals first.',
+                      style: theme.textTheme.bodySmall,
+                    ),
+                  ],
                 ),
               ),
             ),
+            SliverToBoxAdapter(
+              child: Padding(
+                padding: const EdgeInsets.fromLTRB(20, 0, 20, 20),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.stretch,
+                  children: [
+                    OutlinedButton.icon(
+                      onPressed: () => Navigator.of(context).push(
+                        MaterialPageRoute<void>(
+                          builder: (context) => const StarterTemplatesScreen(),
+                        ),
+                      ),
+                      icon: const Icon(Icons.library_add_outlined),
+                      label: const Text('Starter templates'),
+                    ),
+                    const SizedBox(height: 8),
+                    FilledButton.icon(
+                      onPressed: () => _openCreateGoal(context),
+                      icon: const Icon(Icons.add_rounded),
+                      label: const Text('Add goal'),
+                    ),
+                  ],
+                ),
+              ),
+            ),
+            if (goals.isEmpty)
+              const SliverToBoxAdapter(
+                child: Padding(
+                  padding: EdgeInsets.fromLTRB(20, 20, 20, 32),
+                  child: Center(child: Text('No active goals right now.')),
+                ),
+              )
+            else
+              SliverPadding(
+                padding: const EdgeInsets.fromLTRB(20, 4, 20, 20),
+                sliver: SliverReorderableList(
+                  itemCount: goals.length,
+                  onReorderItem: (oldIndex, newIndex) =>
+                      _reorderGoals(context, oldIndex, newIndex),
+                  itemBuilder: (context, index) {
+                    final goal = goals[index];
+                    return Padding(
+                      key: ValueKey(goal.id),
+                      padding: const EdgeInsets.only(bottom: 12),
+                      child: _GoalCard(
+                        goal: goal,
+                        tasks: controller.tasksForGoal(goal.id),
+                        isComplete: controller.isTaskComplete,
+                        onTap: () => _openGoal(context, goal),
+                        dragHandle: ReorderableDragStartListener(
+                          index: index,
+                          child: const IconButton(
+                            tooltip: 'Reorder goal',
+                            onPressed: null,
+                            icon: Icon(Icons.drag_handle_rounded),
+                          ),
+                        ),
+                      ),
+                    );
+                  },
+                ),
+              ),
           ],
         ),
       ),
@@ -722,14 +734,21 @@ class GoalDetailScreen extends StatelessWidget {
     final saved = await controller.toggleTaskCompletion(task.id);
     if (!context.mounted) return;
 
+    if (saved && !wasComplete) {
+      showTaskCompletionFeedback(
+        context: context,
+        task: task,
+        controller: controller,
+      );
+      return;
+    }
+
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(
         content: Text(
-          !saved
-              ? 'That change could not be saved. Please try again.'
-              : wasComplete
-                  ? 'Marked as not done.'
-                  : 'Small step completed.',
+          saved
+              ? 'Marked as not done.'
+              : 'That change could not be saved. Please try again.',
         ),
       ),
     );
