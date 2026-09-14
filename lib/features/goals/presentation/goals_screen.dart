@@ -998,8 +998,10 @@ class GoalDetailScreen extends StatelessWidget {
               ),
               subtitle: Text(
                 controller.isTaskComplete(task)
-                    ? goal.cadence.completionLabel
-                    : '${task.estimatedMinutes} min - ${task.energyLevel.label}',
+                    ? task.repeatMode == TaskRepeatMode.oneTime
+                        ? 'One-time step complete'
+                        : goal.cadence.completionLabel
+                    : '${task.estimatedMinutes} min - ${task.energyLevel.label} - ${task.repeatMode.label}',
               ),
               trailing: Row(
                 mainAxisSize: MainAxisSize.min,
@@ -1513,6 +1515,7 @@ class _CreateStepSheetState extends State<_CreateStepSheet> {
 
   late int _estimatedMinutes;
   late EnergyLevel _energyLevel;
+  late TaskRepeatMode _repeatMode;
 
   @override
   void initState() {
@@ -1521,6 +1524,7 @@ class _CreateStepSheetState extends State<_CreateStepSheet> {
     _titleController = TextEditingController(text: task?.title);
     _estimatedMinutes = task?.estimatedMinutes ?? 5;
     _energyLevel = task?.energyLevel ?? widget.goal.energyLevel;
+    _repeatMode = task?.repeatMode ?? TaskRepeatMode.repeating;
   }
 
   @override
@@ -1542,6 +1546,8 @@ class _CreateStepSheetState extends State<_CreateStepSheet> {
         energyLevel: _energyLevel,
         completions: widget.initialTask?.completions ?? const [],
         isArchived: widget.initialTask?.isArchived ?? false,
+        skips: widget.initialTask?.skips ?? const [],
+        repeatMode: _repeatMode,
       ),
     );
   }
@@ -1583,6 +1589,39 @@ class _CreateStepSheetState extends State<_CreateStepSheet> {
                   }
                   return null;
                 },
+              ),
+              const SizedBox(height: 16),
+              Text(
+                'Will this happen again?',
+                style: Theme.of(context).textTheme.titleMedium,
+              ),
+              const SizedBox(height: 8),
+              SizedBox(
+                width: double.infinity,
+                child: SegmentedButton<TaskRepeatMode>(
+                  segments: const [
+                    ButtonSegment(
+                      value: TaskRepeatMode.repeating,
+                      label: Text('Repeating'),
+                      icon: Icon(Icons.repeat_rounded),
+                    ),
+                    ButtonSegment(
+                      value: TaskRepeatMode.oneTime,
+                      label: Text('One-time'),
+                      icon: Icon(Icons.looks_one_outlined),
+                    ),
+                  ],
+                  selected: {_repeatMode},
+                  onSelectionChanged: (selection) {
+                    setState(() => _repeatMode = selection.first);
+                  },
+                ),
+              ),
+              const SizedBox(height: 8),
+              Text(
+                _repeatMode == TaskRepeatMode.oneTime
+                    ? 'Once completed, this stays done and will not reset.'
+                    : 'This resets with the goal schedule so you can do it again.',
               ),
               const SizedBox(height: 16),
               DropdownButtonFormField<int>(

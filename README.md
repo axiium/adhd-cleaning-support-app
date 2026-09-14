@@ -12,7 +12,7 @@ as medical advice or as a replacement for professional care.
 Completed product slices include:
 
 - Daily, weekly, monthly, and yearly cleaning goals with custom schedules
-- Small steps with editing, archiving, reordering, deletion confirmation, and undo
+- Repeating and one-time small steps with editing, archiving, reordering, deletion confirmation, and undo
 - Today view with progress, skip-for-now, timers, and energy-based rescue mode
 - Optional gentle reminders with quiet hours, snooze, frequency limits, and persistence after repeated skips
 - Completion history with filters, details, and a monthly calendar
@@ -74,6 +74,17 @@ Recent completed commits include:
 
 The prototype uses **Flutter and Dart** so Android and iOS can share one codebase. It starts with a dependency-light, feature-first structure and an offline-first product direction.
 
+### Operational requirements
+
+A product slice is not complete until its implementation, automated tests, and
+documentation are updated together. Every completed slice must update the
+relevant parts of this README, including the current feature status,
+verification totals, known limitations, and next planned work when those items
+change. It must also update [`docs/USER_TESTING.md`](docs/USER_TESTING.md) when
+the slice adds or changes anything testers should try, verify, or provide
+feedback about. These documentation updates should be included in the same
+commit as the slice.
+
 The initial runnable experience includes the core “Do one thing” loop and a
 goal-creation flow. Users can add a goal with a cadence, room or area, and
 typical energy level. Goals, small steps, and completion state are saved on the
@@ -86,6 +97,11 @@ Goals and small steps can be edited, archived, restored, reordered, or removed
 with an explicit warning. Archiving keeps completion history intact and keeps
 the item out of Today; archiving a goal also pauses its reminder until the goal
 is restored.
+
+Small steps can be marked as repeating or one-time. Repeating steps reset with
+their goal's cadence. One-time steps remain available regardless of the goal's
+preferred schedule and stay completed until the user explicitly marks them as
+not done. Their type is retained in local storage and exported backups.
 
 Weekly goals can use a preferred weekday, monthly goals a reliable date from
 1–28, and yearly goals a month and day. A scheduled goal appears on that date
@@ -140,15 +156,17 @@ The APK is generated at
 ### Verification status
 
 The current project passes Flutter analysis and the complete automated test
-suite: 52 tests currently pass. The Android debug APK builds successfully on
+suite: 54 tests currently pass. The Android debug APK builds successfully on
 the development machine.
 
 ## 0. Remaining work
 
-The next product work is early user testing with people who experience task
-paralysis. Feedback should guide wording, task sizing, reminder behavior, and
-onboarding before release preparation begins. Cloud synchronization remains
-deferred until there is a clear privacy, security, and provider decision.
+The next product work is improving onboarding: briefly explain what setup will
+do and let users revisit it later to add rooms, workflows, and starter goals.
+Continued early user testing should guide wording, task sizing, reminder
+behavior, and onboarding before release preparation begins. Cloud
+synchronization remains deferred until there is a clear privacy, security, and
+provider decision.
 
 ## 1. Product idea
 
@@ -288,11 +306,11 @@ Define the smallest clickable prototype around one loop:
 
 > Create a goal → receive one small task → start or skip it → mark it complete → see gentle progress.
 
-The next product slice is expanding completion history with useful filters and
-detail while keeping it free of streak pressure.
+The next product slice is improving first-run onboarding and making the guided
+setup available again from within the app.
 
 ---
 
 **Status:** Early development idea  
 **Document purpose:** Shared product baseline for exploration and prototyping  
-**Last updated:** 2026-09-11
+**Last updated:** 2026-09-14

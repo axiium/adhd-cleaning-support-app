@@ -467,6 +467,8 @@ class _FocusCard extends StatelessWidget {
               children: [
                 Chip(label: Text('${task.estimatedMinutes} min')),
                 Chip(label: Text(task.energyLevel.label)),
+                if (task.repeatMode == TaskRepeatMode.oneTime)
+                  const Chip(label: Text('One-time')),
               ],
             ),
             const SizedBox(height: 16),
@@ -639,8 +641,10 @@ class _TaskRow extends StatelessWidget {
       ),
       subtitle: Text(
         isComplete
-            ? '${cadence.completionLabel} - $goalTitle'
-            : '${task.estimatedMinutes} min - ${cadence.label} - $goalTitle',
+            ? task.repeatMode == TaskRepeatMode.oneTime
+                ? 'One-time step complete - $goalTitle'
+                : '${cadence.completionLabel} - $goalTitle'
+            : '${task.estimatedMinutes} min - ${task.repeatMode == TaskRepeatMode.oneTime ? 'One-time' : cadence.label} - $goalTitle',
       ),
     );
   }

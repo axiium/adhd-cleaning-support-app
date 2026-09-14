@@ -12,6 +12,7 @@ class CompletionHistoryEntry {
     required this.energyLevel,
     required this.estimatedMinutes,
     required this.completedAt,
+    required this.repeatMode,
   });
 
   final String taskId;
@@ -22,6 +23,7 @@ class CompletionHistoryEntry {
   final EnergyLevel energyLevel;
   final int estimatedMinutes;
   final DateTime completedAt;
+  final TaskRepeatMode repeatMode;
 }
 
 class CompletionHistoryDay {
@@ -60,6 +62,7 @@ class CompletionHistory {
             energyLevel: task.energyLevel,
             estimatedMinutes: task.estimatedMinutes,
             completedAt: completion.toLocal(),
+            repeatMode: task.repeatMode,
           ),
         );
       }

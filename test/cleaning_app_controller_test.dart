@@ -365,6 +365,42 @@ void main() {
     restored.dispose();
   });
 
+  test('one-time steps stay available outside the goal schedule', () async {
+    final controller = CleaningAppController(
+      repository: MemoryCleaningRepository(
+        initialSnapshot: CleaningSnapshot(
+          goals: const [
+            CleaningGoal(
+              id: 'projects',
+              title: 'House projects',
+              room: 'Whole home',
+              cadence: GoalCadence.weekly,
+              energyLevel: EnergyLevel.high,
+              schedule: GoalSchedule(weekday: DateTime.friday),
+            ),
+          ],
+          tasks: const [
+            CleaningTask(
+              id: 'hang-shelf',
+              title: 'Hang a shelf',
+              goalId: 'projects',
+              estimatedMinutes: 15,
+              energyLevel: EnergyLevel.high,
+              repeatMode: TaskRepeatMode.oneTime,
+            ),
+          ],
+        ),
+      ),
+      now: () => DateTime(2026, 9, 10, 10),
+    );
+    await controller.initialize();
+
+    expect(controller.tasks.map((task) => task.id), contains('hang-shelf'));
+    expect(await controller.completeTask('hang-shelf'), isTrue);
+    expect(controller.isTaskComplete(controller.allTasks.single), isTrue);
+    controller.dispose();
+  });
+
   test('reminder limit prevents another goal from enabling notifications',
       () async {
     final scheduler = MemoryReminderScheduler();

@@ -47,7 +47,10 @@ class CleaningAppController extends ChangeNotifier {
         _tasks.where((task) {
           if (task.isArchived) return false;
           final goal = goalById(task.goalId);
-          return goal != null && !goal.isArchived && goal.isAvailableOn(_now());
+          return goal != null &&
+              !goal.isArchived &&
+              (task.repeatMode == TaskRepeatMode.oneTime ||
+                  goal.isAvailableOn(_now()));
         }),
       );
   List<CleaningTask> get activeTasks => List.unmodifiable(

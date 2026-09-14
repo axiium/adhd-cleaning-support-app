@@ -105,4 +105,30 @@ void main() {
       isFalse,
     );
   });
+
+  test('one-time completion stays done until it is explicitly undone', () {
+    const oneTimeTask = CleaningTask(
+      id: 'one-time-step',
+      title: 'Hang a shelf',
+      goalId: 'test-goal',
+      estimatedMinutes: 15,
+      energyLevel: EnergyLevel.high,
+      repeatMode: TaskRepeatMode.oneTime,
+    );
+    final completed = oneTimeTask.completedAt(DateTime(2026, 9, 10, 12));
+
+    expect(
+      completed.isCompleteFor(
+        GoalCadence.daily,
+        DateTime(2027, 9, 10, 12),
+      ),
+      isTrue,
+    );
+
+    final undone = completed.withoutCompletionFor(
+      GoalCadence.daily,
+      DateTime(2027, 9, 10, 12),
+    );
+    expect(undone.completions, isEmpty);
+  });
 }

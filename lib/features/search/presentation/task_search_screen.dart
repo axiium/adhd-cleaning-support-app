@@ -200,7 +200,7 @@ class _TaskResult extends StatelessWidget {
           leading: const Icon(Icons.radio_button_unchecked_rounded),
           title: Text(task.title),
           subtitle: Text(
-              '$goalTitle · $room · ${task.estimatedMinutes} min · ${task.energyLevel.label}'),
+              '$goalTitle · $room · ${task.estimatedMinutes} min · ${task.energyLevel.label} · ${task.repeatMode.label}'),
         ),
       );
 }

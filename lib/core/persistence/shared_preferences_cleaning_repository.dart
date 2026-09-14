@@ -19,7 +19,7 @@ class SharedPreferencesCleaningRepository implements CleaningRepository {
 
   // Keep the original key so schema version 1 data can be migrated in place.
   static const _storageKey = 'cleaning_snapshot_v1';
-  static const _schemaVersion = 10;
+  static const _schemaVersion = 11;
 
   final SharedPreferencesAsync _preferences;
   final DateTime Function() _now;
@@ -43,6 +43,7 @@ class SharedPreferencesCleaningRepository implements CleaningRepository {
         version != 7 &&
         version != 8 &&
         version != 9 &&
+        version != 10 &&
         version != _schemaVersion) {
       throw const FormatException('Unsupported cleaning snapshot version.');
     }
@@ -198,6 +199,7 @@ class SharedPreferencesCleaningRepository implements CleaningRepository {
           .toList(),
       'skips':
           task.skips.map((skip) => skip.toUtc().toIso8601String()).toList(),
+      'repeatMode': task.repeatMode.name,
     };
   }
 
@@ -227,6 +229,9 @@ class SharedPreferencesCleaningRepository implements CleaningRepository {
       completions: completions,
       isArchived: json['isArchived'] as bool? ?? false,
       skips: skips,
+      repeatMode: version >= 11
+          ? TaskRepeatMode.values.byName(json['repeatMode'] as String)
+          : TaskRepeatMode.repeating,
     );
   }
 }

@@ -108,6 +108,8 @@ void main() {
       find.widgetWithText(TextFormField, 'Small action'),
       'Put three things away',
     );
+    await tester.tap(find.text('One-time'));
+    await tester.pumpAndSettle();
     await tester.tap(find.text('Add to Today'));
     await tester.pumpAndSettle();
 
@@ -117,6 +119,7 @@ void main() {
       scrollable: find.byType(Scrollable).last,
     );
     expect(find.text('Put three things away'), findsOneWidget);
+    expect(find.textContaining('One-time'), findsWidgets);
 
     await tester.pageBack();
     await tester.pumpAndSettle();

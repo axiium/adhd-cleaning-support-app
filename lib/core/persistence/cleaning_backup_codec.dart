@@ -87,6 +87,7 @@ class CleaningBackupCodec {
             task.completions.map((value) => value.toIso8601String()).toList(),
         'isArchived': task.isArchived,
         'skips': task.skips.map((value) => value.toIso8601String()).toList(),
+        'repeatMode': task.repeatMode.name,
       };
 
   static CleaningGoal _goalFromJson(Map<String, dynamic> json) {
@@ -120,6 +121,9 @@ class CleaningBackupCodec {
         completions: _dates(json['completions']),
         isArchived: json['isArchived'] as bool? ?? false,
         skips: _dates(json['skips']),
+        repeatMode: TaskRepeatMode.values.byName(
+          json['repeatMode'] as String? ?? TaskRepeatMode.repeating.name,
+        ),
       );
 
   static GoalReminder _reminderFromJson(Map<String, dynamic> json) =>

@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 
 import '../../../core/state/cleaning_app_scope.dart';
 import '../../../core/domain/cleaning_values.dart';
+import '../../today/domain/cleaning_task.dart';
 import '../domain/completion_history.dart';
 
 class HistoryScreen extends StatefulWidget {
@@ -187,7 +188,12 @@ class _HistoryScreenState extends State<HistoryScreen> {
               _DetailRow(label: 'Goal', value: entry.goalTitle),
               if (entry.room.isNotEmpty)
                 _DetailRow(label: 'Room', value: entry.room),
-              _DetailRow(label: 'Cadence', value: entry.cadence.label),
+              _DetailRow(
+                label: 'Cadence',
+                value: entry.repeatMode == TaskRepeatMode.oneTime
+                    ? entry.repeatMode.label
+                    : entry.cadence.label,
+              ),
               _DetailRow(label: 'Energy', value: entry.energyLevel.label),
               _DetailRow(
                   label: 'Estimated time',
