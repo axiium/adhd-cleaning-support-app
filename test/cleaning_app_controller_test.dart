@@ -244,6 +244,8 @@ void main() {
         month: DateTime.september,
       ),
     );
+    final cancellationsBeforeArchive =
+        scheduler.cancelledEscalationTaskIds.length;
 
     expect(await controller.archiveGoal('kitchen-usable'), isTrue);
     expect(controller.goals.map((goal) => goal.id),
@@ -252,6 +254,10 @@ void main() {
         isNot(contains('kitchen-counter')));
     expect(controller.archivedGoals.single.id, 'kitchen-usable');
     expect(scheduler.cancelledGoalIds, contains('kitchen-usable'));
+    expect(
+      scheduler.cancelledEscalationTaskIds,
+      hasLength(cancellationsBeforeArchive),
+    );
 
     final history = CompletionHistory.from(
       goals: controller.allGoals,

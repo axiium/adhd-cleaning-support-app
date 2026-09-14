@@ -415,7 +415,6 @@ class CleaningAppController extends ChangeNotifier {
     final index = _goals.indexWhere((goal) => goal.id == goalId);
     if (index == -1 || _goals[index].isArchived) return true;
     final previousGoal = _goals[index];
-
     if (previousGoal.reminder != null) {
       try {
         await _reminderScheduler.cancel(goalId);
@@ -426,15 +425,17 @@ class CleaningAppController extends ChangeNotifier {
         return false;
       }
     }
-    try {
-      for (final task in _tasks.where((task) => task.goalId == goalId)) {
-        await _reminderScheduler.cancelEscalations(task.id);
+    if (previousGoal.reminder?.escalationEnabled == true) {
+      try {
+        for (final task in _tasks.where((task) => task.goalId == goalId)) {
+          await _reminderScheduler.cancelEscalations(task.id);
+        }
+      } on Object {
+        _reminderWarning =
+            'That goal could not be archived because a follow-up reminder stayed active.';
+        notifyListeners();
+        return false;
       }
-    } on Object {
-      _reminderWarning =
-          'That goal could not be archived because a follow-up reminder stayed active.';
-      notifyListeners();
-      return false;
     }
 
     _goals[index] = previousGoal.withArchived(true);
@@ -557,13 +558,16 @@ class CleaningAppController extends ChangeNotifier {
   Future<bool> archiveTask(String taskId) async {
     final index = _tasks.indexWhere((task) => task.id == taskId);
     if (index == -1 || _tasks[index].isArchived) return true;
-    try {
-      await _reminderScheduler.cancelEscalations(taskId);
-    } on Object {
-      _reminderWarning =
-          'That step could not be archived because its follow-up reminder stayed active.';
-      notifyListeners();
-      return false;
+    final goal = goalById(_tasks[index].goalId);
+    if (goal?.reminder?.escalationEnabled == true) {
+      try {
+        await _reminderScheduler.cancelEscalations(taskId);
+      } on Object {
+        _reminderWarning =
+            'That step could not be archived because its follow-up reminder stayed active.';
+        notifyListeners();
+        return false;
+      }
     }
     return _replaceTaskAndPersist(index, _tasks[index].withArchived(true));
   }

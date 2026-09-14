@@ -44,6 +44,7 @@ class _TodayScreenState extends State<TodayScreen> {
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(
         content: const Text('Small step completed.'),
+        duration: const Duration(seconds: 4),
         action: SnackBarAction(
           label: 'Undo',
           onPressed: () => controller.undoTaskCompletion(task.id),
