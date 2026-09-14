@@ -15,6 +15,7 @@ Completed product slices include:
 - Repeating and one-time small steps with editing, archiving, reordering, deletion confirmation, and undo
 - Clearly labeled starter templates and task estimates from 2 to 60 minutes
 - Today view with progress, skip-for-now, timers, and energy-based rescue mode
+- Power Hour planning for 15- to 120-minute windows with an energy ceiling and breathing room
 - Optional gentle reminders with quiet hours, snooze, frequency limits, and persistence after repeated skips
 - Completion history with filters, details, and a monthly calendar
 - Room-based starter templates and guided onboarding that can be revisited without replacing existing goals
@@ -125,6 +126,12 @@ task. Exact matches are shown first, followed by gentler options; rescue mode
 never recommends work above the selected energy and does not save or judge the
 temporary choice.
 
+Power Hour turns a selected 15-, 30-, 45-, 60-, 90-, or 120-minute window into
+a temporary task plan. It only includes unfinished work at or below the chosen
+energy level and normally fills no more than 85% of the available time. Users
+can complete, time, or remove a step from the temporary plan without deleting
+it from their goals.
+
 Reminder controls include optional quiet hours, a cap on how many goals may
 send reminders, and a configurable 15-, 30-, or 60-minute Snooze action on the
 notification itself. Reminders that would occur during quiet hours wait until
@@ -166,13 +173,13 @@ The APK is generated at
 ### Verification status
 
 The current project passes Flutter analysis and the complete automated test
-suite: 56 tests currently pass. The Android debug APK builds successfully on
+suite: 59 tests currently pass. The Android debug APK builds successfully on
 the development machine.
 
 ## 0. Remaining work
 
-The next product work is a time-boxed “Power Hour” mode that creates a
-manageable group of tasks for the time a user has available. Continued early
+The next product work is optional goal deadlines with gentle pacing that leaves
+room for missed days without creating an overwhelming backlog. Continued early
 user testing should guide wording, task sizing, reminder behavior, and
 onboarding before release preparation begins. Cloud synchronization remains
 deferred until there is a clear privacy, security, and provider decision.
@@ -315,8 +322,8 @@ Define the smallest clickable prototype around one loop:
 
 > Create a goal → receive one small task → start or skip it → mark it complete → see gentle progress.
 
-The next product slice is a time-boxed “Power Hour” mode that builds a gentle
-task list inside the user's available time.
+The next product slice is optional goal deadlines with gentle, configurable
+completion pacing.
 
 ---
 

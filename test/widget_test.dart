@@ -638,6 +638,33 @@ void main() {
     expect(find.text('Make the bedroom restful'), findsOneWidget);
   });
 
+  testWidgets('Power Hour builds a buffered plan for available time and energy',
+      (tester) async {
+    await _pumpSeededApp(
+      tester,
+      now: () => DateTime(2026, 9, 14, 10),
+    );
+    await tester.tap(find.text('Plan'));
+    await tester.pumpAndSettle();
+
+    expect(find.text('Power Hour'), findsOneWidget);
+    expect(find.textContaining('leaves breathing room'), findsOneWidget);
+    await tester.tap(find.text('15 min'));
+    await tester.tap(find.text('Build my plan'));
+    await tester.pumpAndSettle();
+
+    expect(find.text('Your gentle plan'), findsOneWidget);
+    expect(find.textContaining('7 of 15 minutes planned'), findsOneWidget);
+    expect(find.textContaining('0 of 2 done'), findsOneWidget);
+
+    final markComplete = find.byTooltip('Mark complete').first;
+    await tester.ensureVisible(markComplete);
+    await tester.pump();
+    await tester.tap(markComplete);
+    await tester.pumpAndSettle();
+    expect(find.textContaining('1 of 2 done'), findsOneWidget);
+  });
+
   testWidgets('small-step search exposes task filters', (tester) async {
     await _pumpSeededApp(tester);
     await tester.tap(find.byIcon(Icons.flag_outlined));

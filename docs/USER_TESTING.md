@@ -32,14 +32,18 @@ You do not need to finish every activity.
    completed rather than resetting with the goal schedule.
 9. Try the energy-based rescue mode and check whether the one-time step can be
    suggested when it matches your selected energy.
-10. Skip a step for now and notice how the message feels.
-11. Archive a goal, confirm that it leaves the active goal list, then open
+10. Open **Power Hour**, choose how much time and energy you have, and build a
+    plan. Confirm that the planned task time leaves some breathing room.
+11. Complete one task in the plan, remove another with **Not this one**, and
+    confirm that the removed task still exists outside the temporary plan.
+12. Skip a step for now and notice how the message feels.
+13. Archive a goal, confirm that it leaves the active goal list, then open
    Archived items and restore it.
-12. Open History and select a day on the monthly calendar.
-13. Open Settings, choose **Add rooms and starter goals**, and add another
+14. Open History and select a day on the monthly calendar.
+15. Open Settings, choose **Add rooms and starter goals**, and add another
     starter. Confirm that existing goals remain and previously added starters
     are clearly identified.
-14. In Settings, try the text-size slider and backup export.
+16. In Settings, try the text-size slider and backup export.
 
 ## Feedback questions
 
@@ -55,6 +59,9 @@ You do not need to finish every activity.
 - Were already-added starter goals clearly distinguished from available ones?
 - Was the Starter Templates entry clearly a collection of predefined options?
 - Did the longer time choices feel useful without discouraging smaller steps?
+- Did Power Hour produce an achievable amount of work for the selected time?
+- Was it clear that Power Hour is temporary and does not delete skipped tasks?
+- Would another name feel gentler or clearer than “Power Hour”?
 - Which controls felt useful when your energy was low?
 - Were any screens too busy, too small, or difficult to navigate?
 - What would make you comfortable opening the app again tomorrow?

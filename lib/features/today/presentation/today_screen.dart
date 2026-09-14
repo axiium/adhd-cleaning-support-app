@@ -3,6 +3,7 @@ import 'package:flutter/services.dart';
 
 import '../../../core/domain/cleaning_values.dart';
 import '../../../core/state/cleaning_app_scope.dart';
+import '../../power_hour/presentation/power_hour_screen.dart';
 import '../../timer/presentation/focus_timer_screen.dart';
 import '../domain/cleaning_task.dart';
 import '../domain/energy_task_recommender.dart';
@@ -96,6 +97,14 @@ class _TodayScreenState extends State<TodayScreen> {
   void _chooseAnotherTask(int pendingCount) {
     if (pendingCount < 2) return;
     setState(() => _focusedIndex = (_focusedIndex + 1) % pendingCount);
+  }
+
+  void _openPowerHour() {
+    Navigator.of(context).push(
+      MaterialPageRoute<void>(
+        builder: (context) => const PowerHourScreen(),
+      ),
+    );
   }
 
   Future<void> _chooseEnergy(List<CleaningTask> pendingTasks) async {
@@ -196,6 +205,8 @@ class _TodayScreenState extends State<TodayScreen> {
               progress: progress,
             ),
             const SizedBox(height: 16),
+            _PowerHourCard(onOpen: _openPowerHour),
+            const SizedBox(height: 16),
             if (pendingTasks.isNotEmpty) ...[
               _EnergyMatchCard(
                 selectedEnergy: _selectedEnergy,
@@ -279,6 +290,43 @@ class _ProgressCard extends StatelessWidget {
             Text('$completed of $total small steps complete'),
             const SizedBox(height: 12),
             LinearProgressIndicator(value: progress),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+class _PowerHourCard extends StatelessWidget {
+  const _PowerHourCard({required this.onOpen});
+
+  final VoidCallback onOpen;
+
+  @override
+  Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    return Card(
+      color: theme.colorScheme.primaryContainer,
+      child: Padding(
+        padding: const EdgeInsets.all(16),
+        child: Row(
+          children: [
+            const Icon(Icons.schedule_rounded),
+            const SizedBox(width: 12),
+            const Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text('Power Hour'),
+                  SizedBox(height: 2),
+                  Text('Build a gentle plan for the time you have.'),
+                ],
+              ),
+            ),
+            FilledButton.tonal(
+              onPressed: onOpen,
+              child: const Text('Plan'),
+            ),
           ],
         ),
       ),
