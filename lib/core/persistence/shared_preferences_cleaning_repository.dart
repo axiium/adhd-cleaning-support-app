@@ -3,6 +3,7 @@ import 'dart:convert';
 import 'package:shared_preferences/shared_preferences.dart';
 
 import '../../features/goals/domain/cleaning_goal.dart';
+import '../../features/goals/domain/goal_deadline.dart';
 import '../../features/goals/domain/goal_schedule.dart';
 import '../../features/reminders/domain/goal_reminder.dart';
 import '../../features/settings/domain/app_preferences.dart';
@@ -19,7 +20,7 @@ class SharedPreferencesCleaningRepository implements CleaningRepository {
 
   // Keep the original key so schema version 1 data can be migrated in place.
   static const _storageKey = 'cleaning_snapshot_v1';
-  static const _schemaVersion = 11;
+  static const _schemaVersion = 12;
 
   final SharedPreferencesAsync _preferences;
   final DateTime Function() _now;
@@ -44,6 +45,7 @@ class SharedPreferencesCleaningRepository implements CleaningRepository {
         version != 8 &&
         version != 9 &&
         version != 10 &&
+        version != 11 &&
         version != _schemaVersion) {
       throw const FormatException('Unsupported cleaning snapshot version.');
     }
@@ -123,6 +125,12 @@ class SharedPreferencesCleaningRepository implements CleaningRepository {
         'dayOfMonth': goal.schedule.dayOfMonth,
         'month': goal.schedule.month,
       },
+      'deadline': goal.deadline == null
+          ? null
+          : {
+              'date': goal.deadline!.date.toIso8601String(),
+              'bufferDays': goal.deadline!.bufferDays,
+            },
       'reminder': goal.reminder == null
           ? null
           : {
@@ -142,6 +150,7 @@ class SharedPreferencesCleaningRepository implements CleaningRepository {
   CleaningGoal _goalFromJson(Map<String, dynamic> json) {
     final rawReminder = json['reminder'];
     final rawSchedule = json['schedule'];
+    final rawDeadline = json['deadline'];
     final reminder = rawReminder is Map
         ? _reminderFromJson(Map<String, dynamic>.from(rawReminder))
         : null;
@@ -161,6 +170,12 @@ class SharedPreferencesCleaningRepository implements CleaningRepository {
               dayOfMonth: reminder?.dayOfMonth ?? fallbackDate.day,
               month: reminder?.month ?? fallbackDate.month,
             ),
+      deadline: rawDeadline is Map
+          ? GoalDeadline(
+              date: DateTime.parse(rawDeadline['date'] as String),
+              bufferDays: rawDeadline['bufferDays'] as int? ?? 1,
+            )
+          : null,
     );
   }
 

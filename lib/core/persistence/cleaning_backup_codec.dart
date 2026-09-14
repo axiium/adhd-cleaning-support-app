@@ -1,6 +1,7 @@
 import 'dart:convert';
 
 import '../../features/goals/domain/cleaning_goal.dart';
+import '../../features/goals/domain/goal_deadline.dart';
 import '../../features/goals/domain/goal_schedule.dart';
 import '../../features/reminders/domain/goal_reminder.dart';
 import '../../features/settings/domain/app_preferences.dart';
@@ -61,6 +62,12 @@ class CleaningBackupCodec {
           'dayOfMonth': goal.schedule.dayOfMonth,
           'month': goal.schedule.month,
         },
+        'deadline': goal.deadline == null
+            ? null
+            : {
+                'date': goal.deadline!.date.toIso8601String(),
+                'bufferDays': goal.deadline!.bufferDays,
+              },
         'reminder': goal.reminder == null
             ? null
             : {
@@ -93,6 +100,7 @@ class CleaningBackupCodec {
   static CleaningGoal _goalFromJson(Map<String, dynamic> json) {
     final schedule = Map<String, dynamic>.from(json['schedule'] as Map? ?? {});
     final reminderJson = json['reminder'];
+    final deadlineJson = json['deadline'];
     final reminder = reminderJson is Map
         ? _reminderFromJson(Map<String, dynamic>.from(reminderJson))
         : null;
@@ -109,6 +117,12 @@ class CleaningBackupCodec {
         month: schedule['month'] as int? ?? 1,
       ),
       reminder: reminder,
+      deadline: deadlineJson is Map
+          ? GoalDeadline(
+              date: DateTime.parse(deadlineJson['date'] as String),
+              bufferDays: deadlineJson['bufferDays'] as int? ?? 1,
+            )
+          : null,
     );
   }
 

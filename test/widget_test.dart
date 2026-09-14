@@ -63,6 +63,8 @@ void main() {
       find.widgetWithText(TextFormField, 'Room or area'),
       'Entryway',
     );
+    await tester.ensureVisible(find.text('Save goal'));
+    await tester.pump();
     await tester.tap(find.text('Save goal'));
     await tester.pumpAndSettle();
 
@@ -333,6 +335,8 @@ void main() {
       'What would you like to maintain?',
     );
     await tester.enterText(goalName, 'Keep the kitchen comfortable');
+    await tester.ensureVisible(find.text('Save changes'));
+    await tester.pump();
     await tester.tap(find.text('Save changes'));
     await tester.pumpAndSettle();
 
@@ -663,6 +667,44 @@ void main() {
     await tester.tap(markComplete);
     await tester.pumpAndSettle();
     expect(find.textContaining('1 of 2 done'), findsOneWidget);
+  });
+
+  testWidgets('an optional deadline adds gentle pacing without overdue work',
+      (tester) async {
+    await _pumpSeededApp(
+      tester,
+      now: () => DateTime(2026, 9, 14, 10),
+    );
+    await tester.tap(find.byIcon(Icons.flag_outlined));
+    await tester.pumpAndSettle();
+    await tester.tap(find.text('Keep the kitchen usable'));
+    await tester.pumpAndSettle();
+    await tester.tap(find.byTooltip('Goal options'));
+    await tester.pumpAndSettle();
+    await tester.tap(find.text('Edit goal'));
+    await tester.pumpAndSettle();
+
+    await tester.ensureVisible(find.text('Add a gentle deadline'));
+    await tester.tap(find.text('Add a gentle deadline'));
+    await tester.pumpAndSettle();
+    expect(find.text('Breathing-room target'), findsOneWidget);
+    await tester.ensureVisible(find.text('Save changes'));
+    await tester.tap(find.text('Save changes'));
+    await tester.pumpAndSettle();
+
+    expect(find.text('Gentle deadline pace'), findsOneWidget);
+    expect(find.textContaining('Aim for'), findsOneWidget);
+    expect(find.textContaining('no backlog'), findsNothing);
+
+    await tester.pageBack();
+    await tester.pumpAndSettle();
+    await tester.tap(find.byIcon(Icons.today_outlined));
+    await tester.pumpAndSettle();
+    expect(find.text('Gentle deadline pace'), findsOneWidget);
+    expect(
+      find.text('A suggestion for today, never an overdue backlog.'),
+      findsOneWidget,
+    );
   });
 
   testWidgets('small-step search exposes task filters', (tester) async {

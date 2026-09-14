@@ -6,6 +6,8 @@ import '../../../core/state/cleaning_app_scope.dart';
 import '../../reminders/domain/goal_reminder.dart';
 import '../../today/domain/cleaning_task.dart';
 import '../domain/cleaning_goal.dart';
+import '../domain/goal_deadline.dart';
+import '../domain/goal_pacing.dart';
 import '../domain/goal_schedule.dart';
 import '../domain/starter_templates.dart';
 import '../../search/presentation/task_search_screen.dart';
@@ -339,6 +341,12 @@ class _GoalCard extends StatelessWidget {
                         Chip(label: Text(goal.cadence.label)),
                         Chip(label: Text(goal.schedule.describe(goal.cadence))),
                         Chip(label: Text(goal.energyLevel.label)),
+                        if (goal.deadline != null)
+                          Chip(
+                            label: Text(
+                              'Deadline ${GoalSchedule.monthNames[goal.deadline!.date.month - 1]} ${goal.deadline!.date.day}, ${goal.deadline!.date.year}',
+                            ),
+                          ),
                       ],
                     ),
                   ],
@@ -875,6 +883,14 @@ class GoalDetailScreen extends StatelessWidget {
     final tasks = controller.tasksForGoal(goalId);
     final completed = tasks.where(controller.isTaskComplete).length;
     final progress = tasks.isEmpty ? 0.0 : completed / tasks.length;
+    final deadline = goal.deadline;
+    final pacing = deadline == null
+        ? null
+        : GoalPacing.calculate(
+            deadline: deadline,
+            remainingTasks: tasks.length - completed,
+            now: controller.currentTime,
+          );
     final theme = Theme.of(context);
 
     return Scaffold(
@@ -935,9 +951,20 @@ class GoalDetailScreen extends StatelessWidget {
                   ),
                   Chip(label: Text(goal.cadence.label)),
                   Chip(label: Text(goal.schedule.describe(goal.cadence))),
+                  if (deadline != null)
+                    Chip(
+                      avatar: const Icon(Icons.event_outlined, size: 18),
+                      label: Text(
+                        'Deadline ${GoalSchedule.monthNames[deadline.date.month - 1]} ${deadline.date.day}, ${deadline.date.year}',
+                      ),
+                    ),
                 ],
               ),
               const SizedBox(height: 20),
+              if (deadline != null && pacing != null) ...[
+                _DeadlinePacingCard(deadline: deadline, pacing: pacing),
+                const SizedBox(height: 20),
+              ],
               _ReminderCard(
                 goal: goal,
                 warning: controller.reminderWarning,
@@ -1247,6 +1274,46 @@ class _ReminderCard extends StatelessWidget {
   }
 }
 
+class _DeadlinePacingCard extends StatelessWidget {
+  const _DeadlinePacingCard({required this.deadline, required this.pacing});
+
+  final GoalDeadline deadline;
+  final GoalPacing pacing;
+
+  @override
+  Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    final message = pacing.remainingTasks == 0
+        ? 'Everything currently in this goal is complete.'
+        : pacing.deadlinePassed
+            ? 'The date has passed. Choose one next step when you are ready; no backlog was added.'
+            : 'Aim for ${pacing.suggestedToday} small ${pacing.suggestedToday == 1 ? 'step' : 'steps'} today. ${pacing.remainingTasks} remain across ${pacing.daysAvailable} ${pacing.daysAvailable == 1 ? 'day' : 'days'}.';
+    return Card(
+      color: theme.colorScheme.secondaryContainer,
+      child: Padding(
+        padding: const EdgeInsets.all(16),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text('Gentle deadline pace', style: theme.textTheme.titleMedium),
+            const SizedBox(height: 6),
+            Text(message),
+            if (pacing.remainingTasks > 0 && !pacing.deadlinePassed) ...[
+              const SizedBox(height: 6),
+              Text(
+                deadline.bufferDays == 0
+                    ? 'Target: finish by the deadline.'
+                    : 'Target: finish ${deadline.bufferDays} ${deadline.bufferDays == 1 ? 'day' : 'days'} early. The suggestion recalculates each day.',
+                style: theme.textTheme.bodySmall,
+              ),
+            ],
+          ],
+        ),
+      ),
+    );
+  }
+}
+
 class _CreateGoalSheet extends StatefulWidget {
   const _CreateGoalSheet({this.initialGoal});
 
@@ -1266,6 +1333,9 @@ class _CreateGoalSheetState extends State<_CreateGoalSheet> {
   late int _weekday;
   late int _dayOfMonth;
   late int _month;
+  late bool _deadlineEnabled;
+  late DateTime _deadlineDate;
+  late int _deadlineBufferDays;
 
   @override
   void initState() {
@@ -1281,6 +1351,10 @@ class _CreateGoalSheetState extends State<_CreateGoalSheet> {
         ? schedule.dayOfMonth.clamp(1, 28)
         : schedule.dayOfMonth;
     _month = schedule.month;
+    _deadlineEnabled = goal?.deadline != null;
+    _deadlineDate =
+        goal?.deadline?.date ?? DateTime.now().add(const Duration(days: 14));
+    _deadlineBufferDays = goal?.deadline?.bufferDays ?? 1;
   }
 
   @override
@@ -1309,8 +1383,27 @@ class _CreateGoalSheetState extends State<_CreateGoalSheet> {
         reminder: widget.initialGoal?.reminder?.alignedWith(schedule),
         isArchived: widget.initialGoal?.isArchived ?? false,
         schedule: schedule,
+        deadline: _deadlineEnabled
+            ? GoalDeadline(
+                date: _deadlineDate,
+                bufferDays: _deadlineBufferDays,
+              )
+            : null,
       ),
     );
+  }
+
+  Future<void> _chooseDeadline() async {
+    final now = DateTime.now();
+    final today = DateTime(now.year, now.month, now.day);
+    final selected = await showDatePicker(
+      context: context,
+      initialDate: _deadlineDate.isBefore(today) ? today : _deadlineDate,
+      firstDate: today,
+      lastDate: DateTime(today.year + 5, today.month, today.day),
+      helpText: 'Choose an optional goal deadline',
+    );
+    if (selected != null) setState(() => _deadlineDate = selected);
   }
 
   Future<void> _chooseAnnualDate() async {
@@ -1473,6 +1566,51 @@ class _CreateGoalSheetState extends State<_CreateGoalSheet> {
                   if (value != null) setState(() => _energyLevel = value);
                 },
               ),
+              const SizedBox(height: 16),
+              SwitchListTile(
+                contentPadding: EdgeInsets.zero,
+                secondary: const Icon(Icons.event_outlined),
+                title: const Text('Add a gentle deadline'),
+                subtitle: const Text(
+                  'Suggest a small daily pace without creating overdue tasks.',
+                ),
+                value: _deadlineEnabled,
+                onChanged: (enabled) =>
+                    setState(() => _deadlineEnabled = enabled),
+              ),
+              if (_deadlineEnabled) ...[
+                const SizedBox(height: 8),
+                SizedBox(
+                  width: double.infinity,
+                  child: OutlinedButton.icon(
+                    onPressed: _chooseDeadline,
+                    icon: const Icon(Icons.calendar_month_outlined),
+                    label: Text(
+                      'Deadline: ${GoalSchedule.monthNames[_deadlineDate.month - 1]} ${_deadlineDate.day}, ${_deadlineDate.year}',
+                    ),
+                  ),
+                ),
+                const SizedBox(height: 12),
+                DropdownButtonFormField<int>(
+                  initialValue: _deadlineBufferDays,
+                  decoration: const InputDecoration(
+                    border: OutlineInputBorder(),
+                    labelText: 'Breathing-room target',
+                    helperText: 'The daily suggestion aims to finish early.',
+                  ),
+                  items: const [
+                    DropdownMenuItem(value: 0, child: Text('By the deadline')),
+                    DropdownMenuItem(value: 1, child: Text('1 day early')),
+                    DropdownMenuItem(value: 2, child: Text('2 days early')),
+                    DropdownMenuItem(value: 3, child: Text('3 days early')),
+                  ],
+                  onChanged: (value) {
+                    if (value != null) {
+                      setState(() => _deadlineBufferDays = value);
+                    }
+                  },
+                ),
+              ],
               const SizedBox(height: 24),
               SizedBox(
                 width: double.infinity,

@@ -50,6 +50,7 @@ class CleaningAppController extends ChangeNotifier {
           return goal != null &&
               !goal.isArchived &&
               (task.repeatMode == TaskRepeatMode.oneTime ||
+                  goal.deadline != null ||
                   goal.isAvailableOn(_now()));
         }),
       );

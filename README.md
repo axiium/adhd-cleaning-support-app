@@ -16,6 +16,7 @@ Completed product slices include:
 - Clearly labeled starter templates and task estimates from 2 to 60 minutes
 - Today view with progress, skip-for-now, timers, and energy-based rescue mode
 - Power Hour planning for 15- to 120-minute windows with an energy ceiling and breathing room
+- Optional goal deadlines with 0- to 3-day buffers and recalculated daily pacing
 - Optional gentle reminders with quiet hours, snooze, frequency limits, and persistence after repeated skips
 - Completion history with filters, details, and a monthly calendar
 - Room-based starter templates and guided onboarding that can be revisited without replacing existing goals
@@ -132,6 +133,12 @@ energy level and normally fills no more than 85% of the available time. Users
 can complete, time, or remove a step from the temporary plan without deleting
 it from their goals.
 
+Goals can optionally have a deadline and a target of finishing on the date or
+up to three days early. Deadline goals make their unfinished steps available on
+Today, where the app suggests a recalculated number of steps for the current
+day. Missed days do not create overdue items, and a passed deadline falls back
+to a neutral suggestion to choose any one step when ready.
+
 Reminder controls include optional quiet hours, a cap on how many goals may
 send reminders, and a configurable 15-, 30-, or 60-minute Snooze action on the
 notification itself. Reminders that would occur during quiet hours wait until
@@ -173,16 +180,17 @@ The APK is generated at
 ### Verification status
 
 The current project passes Flutter analysis and the complete automated test
-suite: 59 tests currently pass. The Android debug APK builds successfully on
+suite: 63 tests currently pass. The Android debug APK builds successfully on
 the development machine.
 
 ## 0. Remaining work
 
-The next product work is optional goal deadlines with gentle pacing that leaves
-room for missed days without creating an overwhelming backlog. Continued early
-user testing should guide wording, task sizing, reminder behavior, and
-onboarding before release preparation begins. Cloud synchronization remains
-deferred until there is a clear privacy, security, and provider decision.
+The next product work is an optional completion action for archiving a step
+that is truly finished, especially one-time work, without removing its history.
+Continued early user testing should guide wording, task sizing, reminder
+behavior, and onboarding before release preparation begins. Cloud
+synchronization remains deferred until there is a clear privacy, security, and
+provider decision.
 
 ## 1. Product idea
 
@@ -322,8 +330,8 @@ Define the smallest clickable prototype around one loop:
 
 > Create a goal → receive one small task → start or skip it → mark it complete → see gentle progress.
 
-The next product slice is optional goal deadlines with gentle, configurable
-completion pacing.
+The next product slice is a post-completion archive action for work that is
+finished for good.
 
 ---
 

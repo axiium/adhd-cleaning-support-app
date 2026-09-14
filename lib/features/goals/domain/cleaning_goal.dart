@@ -1,5 +1,6 @@
 import '../../../core/domain/cleaning_values.dart';
 import '../../reminders/domain/goal_reminder.dart';
+import 'goal_deadline.dart';
 import 'goal_schedule.dart';
 
 class CleaningGoal {
@@ -12,6 +13,7 @@ class CleaningGoal {
     this.reminder,
     this.isArchived = false,
     this.schedule = const GoalSchedule(),
+    this.deadline,
   });
 
   final String id;
@@ -22,6 +24,7 @@ class CleaningGoal {
   final GoalReminder? reminder;
   final bool isArchived;
   final GoalSchedule schedule;
+  final GoalDeadline? deadline;
 
   CleaningGoal withReminder(GoalReminder? reminder) {
     return CleaningGoal(
@@ -33,6 +36,7 @@ class CleaningGoal {
       reminder: reminder,
       isArchived: isArchived,
       schedule: schedule,
+      deadline: deadline,
     );
   }
 
@@ -46,6 +50,7 @@ class CleaningGoal {
       reminder: reminder,
       isArchived: isArchived,
       schedule: schedule,
+      deadline: deadline,
     );
   }
 
@@ -59,6 +64,7 @@ class CleaningGoal {
       reminder: reminder?.alignedWith(schedule),
       isArchived: isArchived,
       schedule: schedule,
+      deadline: deadline,
     );
   }
 

@@ -3,6 +3,8 @@ import 'package:flutter/services.dart';
 
 import '../../../core/domain/cleaning_values.dart';
 import '../../../core/state/cleaning_app_scope.dart';
+import '../../goals/domain/cleaning_goal.dart';
+import '../../goals/domain/goal_pacing.dart';
 import '../../power_hour/presentation/power_hour_screen.dart';
 import '../../timer/presentation/focus_timer_screen.dart';
 import '../domain/cleaning_task.dart';
@@ -184,6 +186,25 @@ class _TodayScreenState extends State<TodayScreen> {
     final focusedTask = _focusedTask(recommendedTasks);
     final completedCount = tasks.where(controller.isTaskComplete).length;
     final progress = tasks.isEmpty ? 0.0 : completedCount / tasks.length;
+    final deadlinePaces = <_DeadlinePaceItem>[];
+    for (final goal in controller.goals) {
+      final deadline = goal.deadline;
+      if (deadline == null) continue;
+      final goalTasks = controller.tasksForGoal(goal.id);
+      final remaining =
+          goalTasks.where((task) => !controller.isTaskComplete(task)).length;
+      if (remaining == 0) continue;
+      deadlinePaces.add(
+        _DeadlinePaceItem(
+          goal: goal,
+          pacing: GoalPacing.calculate(
+            deadline: deadline,
+            remainingTasks: remaining,
+            now: controller.currentTime,
+          ),
+        ),
+      );
+    }
 
     return Scaffold(
       appBar: AppBar(
@@ -207,6 +228,10 @@ class _TodayScreenState extends State<TodayScreen> {
             const SizedBox(height: 16),
             _PowerHourCard(onOpen: _openPowerHour),
             const SizedBox(height: 16),
+            if (deadlinePaces.isNotEmpty) ...[
+              _DeadlineOverviewCard(items: deadlinePaces),
+              const SizedBox(height: 16),
+            ],
             if (pendingTasks.isNotEmpty) ...[
               _EnergyMatchCard(
                 selectedEnergy: _selectedEnergy,
@@ -327,6 +352,57 @@ class _PowerHourCard extends StatelessWidget {
               onPressed: onOpen,
               child: const Text('Plan'),
             ),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+class _DeadlinePaceItem {
+  const _DeadlinePaceItem({required this.goal, required this.pacing});
+
+  final CleaningGoal goal;
+  final GoalPacing pacing;
+}
+
+class _DeadlineOverviewCard extends StatelessWidget {
+  const _DeadlineOverviewCard({required this.items});
+
+  final List<_DeadlinePaceItem> items;
+
+  @override
+  Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    return Card(
+      color: theme.colorScheme.secondaryContainer,
+      child: Padding(
+        padding: const EdgeInsets.all(16),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text('Gentle deadline pace', style: theme.textTheme.titleMedium),
+            const SizedBox(height: 4),
+            const Text('A suggestion for today, never an overdue backlog.'),
+            const SizedBox(height: 12),
+            for (final item in items)
+              Padding(
+                padding: const EdgeInsets.only(bottom: 8),
+                child: Row(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    const Icon(Icons.event_outlined, size: 20),
+                    const SizedBox(width: 8),
+                    Expanded(
+                      child: Text(
+                        item.pacing.deadlinePassed
+                            ? '${item.goal.title}: the date passed, so choose any one step when ready.'
+                            : '${item.goal.title}: aim for ${item.pacing.suggestedToday} ${item.pacing.suggestedToday == 1 ? 'step' : 'steps'} today.',
+                      ),
+                    ),
+                  ],
+                ),
+              ),
           ],
         ),
       ),

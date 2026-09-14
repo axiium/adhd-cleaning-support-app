@@ -36,14 +36,19 @@ You do not need to finish every activity.
     plan. Confirm that the planned task time leaves some breathing room.
 11. Complete one task in the plan, remove another with **Not this one**, and
     confirm that the removed task still exists outside the temporary plan.
-12. Skip a step for now and notice how the message feels.
-13. Archive a goal, confirm that it leaves the active goal list, then open
+12. Edit a goal and add a gentle deadline. Choose whether the pacing should aim
+    for the deadline or finish one to three days early.
+13. Confirm that Today and the goal detail show a small suggested number of
+    steps rather than an overdue backlog. If practical, change the device date
+    forward and confirm that the suggestion recalculates.
+14. Skip a step for now and notice how the message feels.
+15. Archive a goal, confirm that it leaves the active goal list, then open
    Archived items and restore it.
-14. Open History and select a day on the monthly calendar.
-15. Open Settings, choose **Add rooms and starter goals**, and add another
+16. Open History and select a day on the monthly calendar.
+17. Open Settings, choose **Add rooms and starter goals**, and add another
     starter. Confirm that existing goals remain and previously added starters
     are clearly identified.
-16. In Settings, try the text-size slider and backup export.
+18. In Settings, try the text-size slider and backup export.
 
 ## Feedback questions
 
@@ -62,6 +67,9 @@ You do not need to finish every activity.
 - Did Power Hour produce an achievable amount of work for the selected time?
 - Was it clear that Power Hour is temporary and does not delete skipped tasks?
 - Would another name feel gentler or clearer than “Power Hour”?
+- Did deadline pacing feel useful without creating pressure or shame?
+- Was the finish-early buffer understandable, and were 0–3 days enough choice?
+- After missing a suggested day, did the recalculated pace feel manageable?
 - Which controls felt useful when your energy was low?
 - Were any screens too busy, too small, or difficult to navigate?
 - What would make you comfortable opening the app again tomorrow?
