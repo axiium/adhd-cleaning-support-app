@@ -173,3 +173,5 @@ The first slice proves this loop:
 21. Add local backup and export/restore. (Complete)
 22. Keep optional cross-platform synchronization deferred.
 23. Test the interaction with people who experience task paralysis.
+24. Add an Android home-screen **One low-energy thing** widget. (Planned; see
+    [`HOME_SCREEN_WIDGET_PLAN.md`](HOME_SCREEN_WIDGET_PLAN.md))

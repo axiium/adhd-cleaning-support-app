@@ -192,12 +192,14 @@ the development machine.
 
 ## 0. Remaining work
 
-The next product work is guided user testing of the new one-time, Power Hour,
-deadline, and post-completion archive flows, followed by fixes and wording
-refinements from that feedback. Continued testing should also guide task sizing,
-reminder behavior, and onboarding before release preparation begins. Cloud
-synchronization remains deferred until there is a clear privacy, security, and
-provider decision.
+The next planned product slice is an Android home-screen **One low-energy
+thing** widget. Its first version will only show eligible unfinished low-energy
+steps and provide Done, Another, and Open app actions while reusing the app's
+completion history and recurrence rules. Medium- and high-energy choices remain
+inside the app. The scoped implementation and acceptance criteria are in
+[`docs/HOME_SCREEN_WIDGET_PLAN.md`](docs/HOME_SCREEN_WIDGET_PLAN.md). Guided
+testing should continue alongside that work. Cloud synchronization remains
+deferred until there is a clear privacy, security, and provider decision.
 
 ## 1. Product idea
 
@@ -337,11 +339,13 @@ Define the smallest clickable prototype around one loop:
 
 > Create a goal → receive one small task → start or skip it → mark it complete → see gentle progress.
 
-The next product slice will be selected from fresh user-testing feedback, with
-release-readiness work following once the core flow is comfortable to use.
+The next product slice is the Android home-screen **One low-energy thing** widget
+defined in [`docs/HOME_SCREEN_WIDGET_PLAN.md`](docs/HOME_SCREEN_WIDGET_PLAN.md).
+Release-readiness work will follow once the widget and revised core flow are
+comfortable to use.
 
 ---
 
 **Status:** Early development idea  
 **Document purpose:** Shared product baseline for exploration and prototyping  
-**Last updated:** 2026-09-14
+**Last updated:** 2026-09-18
