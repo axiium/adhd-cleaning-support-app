@@ -14,6 +14,15 @@ class StarterTemplate {
   final GoalCadence cadence;
   final EnergyLevel energyLevel;
   final List<StarterTemplateStep> steps;
+
+  String get energySummary {
+    final included = EnergyLevel.values
+        .where((energy) => steps.any((step) => step.energyLevel == energy))
+        .map((energy) => energy.label.replaceAll(' energy', ''))
+        .toList();
+    if (included.length == 1) return '${included.single} energy';
+    return '${included.join(' + ')} energy mix';
+  }
 }
 
 class StarterTemplateStep {

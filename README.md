@@ -114,7 +114,10 @@ not done. Their type is retained in local storage and exported backups.
 First-run setup explains that it creates a small, editable task pool and that
 reminders remain off by default. The same guided setup can be opened later from
 Settings to add rooms and starter goals without replacing existing data or
-duplicating starter goals that are already present.
+duplicating starter goals that are already present. The energy selected during
+setup carries into Today as an active suggestion cap: Low never automatically
+falls through to Medium or High. Mixed-energy starter bundles are labeled as a
+mix, and their individual steps show their energy before the bundle is added.
 
 Starter templates are available through a labeled button on Goals rather than
 an ambiguous sparkle icon. The template and Add goal actions use separate,
@@ -187,7 +190,7 @@ The APK is generated at
 ### Verification status
 
 The current project passes Flutter analysis and the complete automated test
-suite: 65 tests currently pass. The Android debug APK builds successfully on
+suite: 66 tests currently pass. The Android debug APK builds successfully on
 the development machine.
 
 ## 0. Remaining work

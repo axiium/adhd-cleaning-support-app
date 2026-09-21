@@ -266,13 +266,13 @@ class StarterTemplatesScreen extends StatelessWidget {
                     Text(template.title, style: theme.textTheme.titleMedium),
                     const SizedBox(height: 8),
                     Text(
-                        '${template.steps.length} small steps · ${template.cadence.label} · ${template.energyLevel.label}'),
+                        '${template.steps.length} small steps · ${template.cadence.label} · ${template.energySummary}'),
                     const SizedBox(height: 8),
                     for (final step in template.steps)
                       Padding(
                         padding: const EdgeInsets.only(bottom: 4),
                         child: Text(
-                            '• ${step.title} (${step.estimatedMinutes} min)'),
+                            '• ${step.title} (${step.estimatedMinutes} min · ${step.energyLevel.label})'),
                       ),
                     const SizedBox(height: 8),
                     SizedBox(

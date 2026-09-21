@@ -115,6 +115,11 @@ void main() {
 
     expect(find.text('Starter templates'), findsOneWidget);
     expect(find.text('Kitchen'), findsOneWidget);
+    expect(find.textContaining('Low + Medium energy mix'), findsWidgets);
+    expect(
+      find.textContaining('Take out food trash if it smells (3 min · Medium'),
+      findsOneWidget,
+    );
     await tester.tap(find.text('Add this starter').first);
     await tester.pumpAndSettle();
 
@@ -656,6 +661,51 @@ void main() {
     await tester.pumpAndSettle();
 
     expect(find.text('Today'), findsWidgets);
+  });
+
+  testWidgets('low onboarding energy never auto-suggests medium work',
+      (tester) async {
+    await tester.pumpWidget(
+      CleaningSupportApp(
+        repository: MemoryCleaningRepository(),
+        reminderScheduler: MemoryReminderScheduler(),
+      ),
+    );
+    await tester.pumpAndSettle();
+
+    expect(find.text('Low'), findsOneWidget);
+    await tester.scrollUntilVisible(
+      find.text('Start gently'),
+      300,
+      scrollable: find.byType(Scrollable).last,
+    );
+    await tester.tap(find.text('Start gently'));
+    await tester.pumpAndSettle();
+
+    expect(find.text('Matching low energy tasks'), findsOneWidget);
+    expect(find.text('Low energy match'), findsOneWidget);
+    expect(find.text('Clear one section of the counter'), findsWidgets);
+
+    for (var completed = 0; completed < 2; completed++) {
+      await tester.ensureVisible(find.text('I did it'));
+      await tester.pumpAndSettle();
+      await tester.tap(find.text('I did it'));
+      await tester.pumpAndSettle();
+      tester
+          .state<ScaffoldMessengerState>(find.byType(ScaffoldMessenger))
+          .hideCurrentSnackBar();
+      await tester.pumpAndSettle();
+    }
+
+    expect(find.text('You finished the matching options.'), findsOneWidget);
+    expect(find.text('Show any task'), findsOneWidget);
+    expect(find.text('Medium energy'), findsNothing);
+
+    await tester.tap(find.text('Show any task'));
+    await tester.pumpAndSettle();
+    expect(find.text('Do one thing'), findsOneWidget);
+    expect(find.text('Take out food trash if it smells'), findsWidgets);
+    expect(find.text('Medium energy'), findsOneWidget);
   });
 
   testWidgets('guided setup can add goals without replacing existing ones',

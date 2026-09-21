@@ -22,6 +22,16 @@ class _TodayScreenState extends State<TodayScreen> {
   int _focusedIndex = 0;
   EnergyLevel? _selectedEnergy;
 
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    final pendingEnergy = CleaningAppScope.of(context).takePendingTodayEnergy();
+    if (pendingEnergy != null) {
+      _selectedEnergy = pendingEnergy;
+      _focusedIndex = 0;
+    }
+  }
+
   CleaningTask? _focusedTask(List<CleaningTask> pendingTasks) {
     if (pendingTasks.isEmpty) return null;
     return pendingTasks[_focusedIndex % pendingTasks.length];

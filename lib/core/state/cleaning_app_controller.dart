@@ -1,5 +1,6 @@
 import 'package:flutter/foundation.dart';
 
+import '../domain/cleaning_values.dart';
 import '../../features/goals/domain/cleaning_goal.dart';
 import '../../features/reminders/application/reminder_scheduler.dart';
 import '../../features/reminders/domain/goal_reminder.dart';
@@ -37,6 +38,7 @@ class CleaningAppController extends ChangeNotifier {
   bool _isFirstRun = false;
   String? _storageWarning;
   String? _reminderWarning;
+  EnergyLevel? _pendingTodayEnergy;
 
   List<CleaningGoal> get goals =>
       List.unmodifiable(_goals.where((goal) => !goal.isArchived));
@@ -75,6 +77,12 @@ class CleaningAppController extends ChangeNotifier {
   String? get reminderWarning => _reminderWarning;
   DateTime get currentTime => _now().toLocal();
   AppPreferences get preferences => _preferences;
+
+  EnergyLevel? takePendingTodayEnergy() {
+    final energy = _pendingTodayEnergy;
+    _pendingTodayEnergy = null;
+    return energy;
+  }
 
   String exportBackup() => CleaningBackupCodec.encode(
         CleaningSnapshot(
@@ -149,16 +157,19 @@ class CleaningAppController extends ChangeNotifier {
 
   Future<bool> finishOnboarding(
     List<CleaningGoal> goals,
-    List<CleaningTask> tasks,
-  ) async {
+    List<CleaningTask> tasks, {
+    EnergyLevel? initialEnergy,
+  }) async {
     final previousGoals = List<CleaningGoal>.of(_goals);
     final previousTasks = List<CleaningTask>.of(_tasks);
+    final previousPendingTodayEnergy = _pendingTodayEnergy;
     _goals
       ..clear()
       ..addAll(goals);
     _tasks
       ..clear()
       ..addAll(tasks);
+    _pendingTodayEnergy = initialEnergy;
     _isFirstRun = false;
     notifyListeners();
     if (await _persist()) return true;
@@ -168,6 +179,7 @@ class CleaningAppController extends ChangeNotifier {
     _tasks
       ..clear()
       ..addAll(previousTasks);
+    _pendingTodayEnergy = previousPendingTodayEnergy;
     _isFirstRun = true;
     notifyListeners();
     return false;
@@ -175,8 +187,9 @@ class CleaningAppController extends ChangeNotifier {
 
   Future<bool> addGuidedSetup(
     List<CleaningGoal> goals,
-    List<CleaningTask> tasks,
-  ) async {
+    List<CleaningTask> tasks, {
+    EnergyLevel? initialEnergy,
+  }) async {
     final existingGoalIds = _goals.map((goal) => goal.id).toSet();
     final newGoalIds = goals.map((goal) => goal.id).toSet();
     final existingTaskIds = _tasks.map((task) => task.id).toSet();
@@ -192,8 +205,10 @@ class CleaningAppController extends ChangeNotifier {
 
     final previousGoals = List<CleaningGoal>.of(_goals);
     final previousTasks = List<CleaningTask>.of(_tasks);
+    final previousPendingTodayEnergy = _pendingTodayEnergy;
     _goals.addAll(goals);
     _tasks.addAll(tasks);
+    _pendingTodayEnergy = initialEnergy;
     notifyListeners();
     if (await _persist()) return true;
 
@@ -203,6 +218,7 @@ class CleaningAppController extends ChangeNotifier {
     _tasks
       ..clear()
       ..addAll(previousTasks);
+    _pendingTodayEnergy = previousPendingTodayEnergy;
     notifyListeners();
     return false;
   }

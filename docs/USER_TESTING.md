@@ -15,8 +15,11 @@ or difficult, not to measure productivity or consistency.
 Please use the app for 15–20 minutes and talk through what you expect to happen.
 You do not need to finish every activity.
 
-1. Read the opening setup explanation. Note whether it clearly explains what
-   will be created and that reminders remain off by default.
+1. Read the opening setup explanation. Choose **Low** energy and start with the
+   default Kitchen goal. Confirm Today only suggests its two Low steps; after
+   completing both, it should ask before showing the remaining Medium step.
+   Also note whether setup clearly explains what will be created and that
+   reminders remain off by default.
 2. Open Goals and find **Starter templates**. Note whether the labeled button
    is clear, does not overlap **Add goal**, and whether anything about it still
    suggests an AI feature. Check again after increasing the app's text size.
@@ -65,6 +68,9 @@ You do not need to finish every activity.
 - Was the post-completion message comfortable to use at your text-size setting?
 - Did archiving and restoring a goal behave as you expected?
 - Did the guided setup explain its purpose before asking you to make choices?
+- After choosing Low in setup, did the app avoid automatically suggesting a
+  Medium or High step?
+- Were mixed-energy starter goals and each step's energy clear before adding?
 - Was it easy to find and rerun setup without worrying about losing data?
 - Were already-added starter goals clearly distinguished from available ones?
 - Was the Starter Templates entry clearly a collection of predefined options?

@@ -127,6 +127,13 @@ matches before lower-energy alternatives. Tasks above the selected energy are
 excluded. The choice is intentionally not persisted because it describes the
 current moment rather than a user profile or performance metric.
 
+The first-run and reusable guided setup hand the selected energy to Today as a
+one-time session value after saving. This preserves the session-only model while
+ensuring a Low setup choice cannot immediately produce a Medium suggestion.
+Starter templates may contain a mix of step energies, so their UI derives and
+displays the mix from the steps instead of presenting the template's entry
+energy as though every included step shared it.
+
 Completion is reversible within the current recurrence period. Undo filters out
 only timestamps from that period, retaining older history. Today provides an
 immediate snackbar action after completion, and task status icons act as explicit

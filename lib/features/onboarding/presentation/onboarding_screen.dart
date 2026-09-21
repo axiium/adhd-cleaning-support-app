@@ -72,8 +72,16 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
       }
     }
     final saved = widget.addToExisting
-        ? await controller.addGuidedSetup(goals, tasks)
-        : await controller.finishOnboarding(goals, tasks);
+        ? await controller.addGuidedSetup(
+            goals,
+            tasks,
+            initialEnergy: skip ? null : _energy,
+          )
+        : await controller.finishOnboarding(
+            goals,
+            tasks,
+            initialEnergy: skip ? null : _energy,
+          );
     if (!mounted) return;
     if (saved) {
       if (widget.addToExisting) {
@@ -157,6 +165,10 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
             Text('How much energy do you have?',
                 style: theme.textTheme.titleMedium),
             const SizedBox(height: 8),
+            const Text(
+              'This limits what Today suggests first. Mixed starter goals may include harder steps for another time.',
+            ),
+            const SizedBox(height: 8),
             SegmentedButton<EnergyLevel>(
               showSelectedIcon: false,
               segments: [
@@ -192,7 +204,7 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
                 subtitle: Text(
                   _alreadyAdded(template)
                       ? '${template.room} · Already added'
-                      : '${template.room} · ${template.energyLevel.label} · ${template.steps.length} small steps',
+                      : '${template.room} · ${template.energySummary} · ${template.steps.length} small steps',
                 ),
                 value: !_alreadyAdded(template) &&
                     _selectedTemplates.contains(template.title),
